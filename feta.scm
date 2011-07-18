@@ -31,3 +31,6 @@
 
 (define db-location (string-append (getenv "HOME") "/.ttdb"))
 (define open-db (lambda () (open-file db-location "r")))
+
+(display (parse-db-port (open-db)))
+(newline)
