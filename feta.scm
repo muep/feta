@@ -120,10 +120,11 @@
         " seconds\n")
        ""))))
 
-(define db (catch #t
-                  (lambda ()
-                    (read-db))
-                  (lambda _ '())))
+(define db
+  (catch #t
+         (lambda ()
+           (read-db))
+         (lambda _ '())))
 
 (define display-sessionlist
   (lambda (sessions)
