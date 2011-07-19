@@ -101,26 +101,29 @@
     (read-lines in-port parse-db-line)))
 
 (define db-location (string-append (getenv "HOME") "/.ttdb"))
-(define open-db (lambda () (open-file db-location "r")))
+(define read-db (lambda () (parse-db-port (open-file db-location "r"))))
 
 (define session->userline
   (lambda (session)
-    (let* ((from (cdr (assoc 'start-time session)))
-           (to (cdr (assoc 'end-time session))))
+    (let* ((from  (cdr (assoc 'start-time session)))
+           (to    (cdr (assoc 'end-time session)))
+           (descr (cdr (assoc 'description session))))
       (string-join
        (list
         "From "
         (time->string from)
         " to "
         (time->string to)
-        " ("
+        " on \""
+        descr
+        "\" for "
         (number->string
          (time-second
-          (time-difference from
-                           (if (time? to)
+          (time-difference (if (time? to)
                                to
-                               (current-time 'time-utc)))))
-        ") seconds\n")
+                               (current-time 'time-utc))
+                           from)))
+        " seconds\n")
        ""))))
 
 
@@ -129,4 +132,4 @@
     (for-each display (map session->userline sessions))))
 
 
-(display-sessionlist (parse-db-port (open-db)))
+(display-sessionlist (read-db))
