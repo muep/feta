@@ -7,6 +7,22 @@
 ;; Time/date library.
 (use-modules (srfi srfi-19))
 
+;; Generic list utilities (TODO: find out if this already exists somewhere)
+;; TODO: get a high
+(define remove-adjacents
+  (lambda (list match? prev)
+    (if (null? list)
+        '()
+        (let ((head (car list))
+              (tail (cdr list)))
+          (if (match? head prev)
+              (remove-adjacents tail match? head)
+              (cons head (remove-adjacents tail match? head)))))))
+
+(define uniquify
+  (lambda (list)
+    (remove-adjacents (sort list string<?) equal? "")))
+
 ;; Date conversion code
 (define full-date-format "~Y-~m-~dT~H:~M:~S")
 (define date-formats
