@@ -147,4 +147,26 @@
     (for-each display (map session->userline sessions))))
 
 
+(define display-descriptions
+  (lambda (db)
+    (for-each
+     (lambda (descr)
+       (display descr)
+       (newline))
+     (descriptions db))))
+
+
+(define descriptions
+  (lambda (db)
+    (uniquify
+     (map
+      (lambda (session)
+        (cdr (assoc 'description session))) db))))
+
+
+
+
 (display-sessionlist db)
+
+(display "descriptions:\n")
+(display-descriptions db)
