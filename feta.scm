@@ -142,10 +142,18 @@
            (read-db))
          (lambda _ '())))
 
+(define descriptions
+  (lambda (db)
+    (uniquify
+     (map
+      (lambda (session)
+        (cdr (assoc 'description session))) db))))
+
+;; Some simple display functions for
+;; our simple cases.
 (define display-sessionlist
   (lambda (sessions)
     (for-each display (map session->userline sessions))))
-
 
 (define display-descriptions
   (lambda (db)
@@ -155,18 +163,5 @@
        (newline))
      (descriptions db))))
 
-
-(define descriptions
-  (lambda (db)
-    (uniquify
-     (map
-      (lambda (session)
-        (cdr (assoc 'description session))) db))))
-
-
-
-
+;; Main program starts here.
 (display-sessionlist db)
-
-(display "descriptions:\n")
-(display-descriptions db)
