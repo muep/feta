@@ -3,6 +3,31 @@
 
 (use-modules (ice-9 rdelim))
 
+;; Date conversion code
+(define full-date-format "~Y-~m-~dT~H:~M:~S")
+(define date-formats
+  (list full-date-format
+        "~Y-~m-~dT~H:~M"
+        "~Y-~m-~d"))
+(define time-formats
+  '("~H:~M:~S"
+    "~H:~M"))
+
+(define fallbacky-string->date
+  (lambda (str formats)
+    (if (null? formats)
+        #f
+        (catch 'misc-error
+               (lambda ()
+                 (string->date str (car formats)))
+               (lambda _
+                 (fallbacky-string->date str (cdr formats)))))))
+
+(define permissive-string->date
+  (lambda (str)
+    (fallbacky-string->date str date-formats)))
+
+
 (define parse-db-line
   (lambda (line)
     (let* ((tokens (string-split line #\;))
