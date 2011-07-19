@@ -65,14 +65,8 @@
 (define parse-db-line
   (lambda (line)
     (let* ((tokens (string-split line #\;))
-           (start-time (make-time
-                        'time-utc
-                        0
-                        (string->number (car tokens))))
-           (end-time (make-time
-                      'time-utc
-                      0
-                      (string->number (car (cdr tokens)))))
+           (start-time (db-string->time (car tokens)))
+           (end-time (db-string->time (car (cdr tokens))))
            (description (string-join (cddr tokens))))
 
       (acons 'start-time start-time
