@@ -120,10 +120,11 @@
         " seconds\n")
        ""))))
 
+(define db (read-db))
 
 (define display-sessionlist
   (lambda (sessions)
     (for-each display (map session->userline sessions))))
 
 
-(display-sessionlist (read-db))
+(display-sessionlist db)
