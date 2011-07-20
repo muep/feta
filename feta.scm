@@ -333,5 +333,9 @@
                  session<?)))
     (write-db new-db (open-file db-location "w"))))
  (want-end
-  (display "should end\n"))
+  (let ((new-db (sort
+                 ;; Old database with itse sessions closed
+                 (map (session-closer requested-time) db)
+                 session<?)))
+    (write-db new-db (open-file db-location "w"))))
  (#t (display-sessionlist db)))
