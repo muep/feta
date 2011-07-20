@@ -310,9 +310,11 @@
 (define requested-time
   (option-ref options 'time (current-time 'time-utc)))
 
-(define description
+(define requested-description
   (option-ref options 'description
-              (cdr (assoc 'description (car (last-pair db))))))
+              (if (null? db)
+                  "Default project"
+                  (cdr (assoc 'description (car (last-pair db)))))))
 
 (define want-start  (option-ref options 'start #f))
 (define want-end (option-ref options 'end #f))
@@ -324,6 +326,15 @@
       (exit 1)))
 
 (cond
- (want-start (display "should start\n"))
- (want-end (display "should end\n"))
+ (want-start
+  (let ((new-db (sort
+                 (append
+                  ;; Old database with itse sessions closed
+                  (map (session-closer requested-time) db)
+                  ;; And an element with the added session
+                  (list (session-new requested-time requested-description)))
+                 session<?)))
+    (write-db new-db (open-file db-location "w"))))
+ (want-end
+  (display "should end\n"))
  (#t (display-sessionlist db)))
