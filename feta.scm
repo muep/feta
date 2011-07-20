@@ -144,12 +144,12 @@
   (lambda (session)
     (let ((start-time (cdr (assoc 'start-time session)))
           (end-time (cdr (assoc 'end-time session)))
-          (description (cdr (assoc 'description-time session))))
+          (description (cdr (assoc 'description session))))
       (string-append
        (number->string (time-second start-time))
        ";"
-       (if (end-time)
-           (number->string (time-second end-time)))
+       (if end-time
+           (number->string (time-second end-time)) "")
        ";"
        description
        ";\n"))))
