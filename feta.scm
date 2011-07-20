@@ -77,7 +77,7 @@
     "~H:~M"))
 
 (define user-time-format
-  "~Y-~m-~dT ~H:~M")
+  "~Y-~m-~dT~H:~M")
 (define user-nonexistent-time-format
   "(time ain't defined)")
 
