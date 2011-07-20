@@ -124,6 +124,18 @@
                         (string->number str)))
            (lambda _ #f))))
 
+(define session-new
+  (lambda (time description)
+    (acons 'start-time time
+           (acons 'end-time #f
+                  (acons 'description description '())))))
+
+;; Return a function that closes sessions
+(define session-closer
+  (lambda (end-time)
+    (lambda (session)
+      (assoc-set! session 'end-time end-time))))
+
 (define string->session
   (lambda (line)
     (let* ((tokens (string-split line #\;))
@@ -229,12 +241,6 @@
   (lambda (s0 s1)
     (time<? (cdr (assoc 'start-time s0))
             (cdr (assoc 'start-time s1)))))
-
-(define new-session
-  (lambda (time description)
-    (acons 'start-time time
-           (acons 'end-time #f
-                  (acons 'description description '())))))
 
 ;; Some simple display functions for
 ;; our simple cases.
