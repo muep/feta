@@ -138,7 +138,7 @@
     (let* ((tokens (string-split line #\;))
            (start-time (db-string->time (car tokens)))
            (end-time (db-string->time (car (cdr tokens))))
-           (description (string-join (cddr tokens))))
+           (description (string-join (cddr tokens) "")))
 
       (acons 'start-time start-time
              (acons 'end-time end-time
