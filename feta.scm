@@ -79,7 +79,7 @@
 (define user-time-format
   "~Y-~m-~dT~H:~M")
 (define user-nonexistent-time-format
-  "(time ain't defined)")
+  "   until now    ")
 
 (define time->string
   (lambda (time)
