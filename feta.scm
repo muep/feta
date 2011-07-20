@@ -104,7 +104,7 @@
                ;; On failure, just keep trying with the rest of the
                ;; format list.
                (lambda _
-                 (fallbacky-string->date str (cdr formats)))))))
+                 (fallbacky-string->time str (cdr formats)))))))
 
 ;; Just a convenience wrapper
 (define permissive-string->time
@@ -127,11 +127,17 @@
            (acons 'end-time #f
                   (acons 'description description '())))))
 
+(define session-end-time
+  (lambda (session)
+    (cdr (assoc 'end-time session))))
+
 ;; Return a function that closes sessions
 (define session-closer
   (lambda (end-time)
     (lambda (session)
-      (assoc-set! session 'end-time end-time))))
+      (if (session-end-time session)
+          session
+          (assoc-set! session 'end-time end-time)))))
 
 (define string->session
   (lambda (line)
@@ -290,8 +296,6 @@
     (time
      (value #t)
      (single-char #\t)
-     (predicate (lambda (timestr)
-                  (time? (permissive-string->time timestr))))
      )))
 
 
@@ -305,7 +309,10 @@
       (exit 0)))
 
 (define requested-time
-  (option-ref options 'time (current-time 'time-utc)))
+  (let ((timearg (option-ref options 'time #f)))
+    (if timearg
+        (permissive-string->time timearg)
+        (current-time 'time-utc))))
 
 (define requested-description
   (option-ref options 'description
