@@ -124,7 +124,7 @@
                         (string->number str)))
            (lambda _ #f))))
 
-(define parse-db-line
+(define string->session
   (lambda (line)
     (let* ((tokens (string-split line #\;))
            (start-time (db-string->time (car tokens)))
@@ -173,7 +173,7 @@
 
 (define parse-db-port
   (lambda (in-port)
-    (read-lines in-port parse-db-line)))
+    (read-lines in-port string->session)))
 
 (define db-location (string-append (getenv "HOME") "/.ttdb"))
 (define read-db
