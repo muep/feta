@@ -319,5 +319,5 @@
 
 (cond
  (want-start (display "should start\n"))
- (want-end (display "should end"))
+ (want-end (display "should end\n"))
  (#t (display-sessionlist db)))
