@@ -44,10 +44,9 @@
 ;; WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ;; THE POSSIBILITY OF SUCH DAMAGE.
 
-;; Line-oriented port reading
+(use-modules (ice-9 getopt-long))
 (use-modules (ice-9 rdelim))
 
-;; Time/date library.
 (use-modules (srfi srfi-19))
 
 ;; Generic list utilities (TODO: find out if this already
@@ -65,6 +64,10 @@
 (define uniquify
   (lambda (list)
     (remove-adjacents (sort list string<?) equal? "")))
+
+(define last
+  (lambda (l)
+    (car (last-pair l))))
 
 ;; Date conversion code
 (define full-date-format "~Y-~m-~dT~H:~M:~S")
@@ -132,6 +135,25 @@
              (acons 'end-time end-time
                     (acons 'description description '()))))))
 
+(define session<?
+  (lambda (s0 s1)
+    (time<? (cdr (assoc 'start-time s0))
+            (cdr (assoc 'start-time s1)))))
+
+(define session->string
+  (lambda (session)
+    (let ((start-time (cdr (assoc 'start-time session)))
+          (end-time (cdr (assoc 'end-time session)))
+          (description (cdr (assoc 'description-time session))))
+      (string-append
+       (number->string (time-second start-time))
+       ";"
+       (if (end-time)
+           (number->string (time-second end-time)))
+       ";"
+       description
+       ";\n"))))
+
 (define read-lines-with
   (lambda (port f prevs)
     (let ((line (read-line port)))
@@ -154,7 +176,18 @@
     (read-lines in-port parse-db-line)))
 
 (define db-location (string-append (getenv "HOME") "/.ttdb"))
-(define read-db (lambda () (parse-db-port (open-file db-location "r"))))
+(define read-db
+  (lambda ()
+    (sort
+     (parse-db-port (open-file db-location "r"))
+     session<?)))
+
+(define write-db
+  (lambda (db out)
+    (for-each
+     (lambda (session)
+       (display (session->string session) out))
+     db)))
 
 (define session->userline
   (lambda (session)
@@ -217,5 +250,74 @@
        (newline))
      (descriptions db))))
 
+
+;; Actions:
+;;   default
+;;   info
+;;   start
+;;   end
+;;
+
+(define argv (command-line))
+
+(define helpmsg
+  (string-append
+   "Usage: "
+   (car argv)
+   " <options>\n"))
+
+(define option-spec
+  '((version (value #f))
+    (help
+     (value #f)
+     (single-char #\h))
+
+    (start
+     (value #f)
+     (single-char #\s))
+
+    (end
+     (value #f)
+     (single-char #\e))
+
+    (description
+     (value #t)
+     (single-char #\d))
+
+    (time
+     (value #t)
+     (single-char #\t)
+     (predicate (lambda (timestr)
+                  (time? (permissive-string->time timestr))))
+     )))
+
+
 ;; Main program starts here.
-(display-sessionlist db)
+(define options
+  (getopt-long (command-line) option-spec))
+
+(if (option-ref options 'help #f)
+    (begin
+      (display helpmsg)
+      (exit 0)))
+
+(define requested-time
+  (option-ref options 'time (current-time 'time-utc)))
+
+(define description
+  (option-ref options 'description
+              (cdr (assoc 'description (car (last-pair db))))))
+
+(define want-start  (option-ref options 'start #f))
+(define want-end (option-ref options 'end #f))
+
+(if (and want-start want-end)
+    (begin
+      (display "Can not both start and end\n")
+      (display helpmsg)
+      (exit 1)))
+
+(cond
+ (want-start (display "should start\n"))
+ (want-end (display "should end"))
+ (#t (display-sessionlist db)))
