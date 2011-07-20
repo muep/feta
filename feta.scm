@@ -50,8 +50,8 @@
 ;; Time/date library.
 (use-modules (srfi srfi-19))
 
-;; Generic list utilities (TODO: find out if this already exists somewhere)
-;; TODO: get a high
+;; Generic list utilities (TODO: find out if this already
+;; exists somewhere)
 (define remove-adjacents
   (lambda (list match? prev)
     (if (null? list)
