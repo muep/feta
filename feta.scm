@@ -87,6 +87,14 @@
         (date->string (time-utc->date time) user-time-format)
         user-nonexistent-time-format)))
 
+(define duration->string
+  (lambda (seconds)
+    (let* ((hours (floor (/ seconds 3600)))
+           (remaining (modulo seconds 3600))
+           (mins (floor (/ remaining 60))))
+      (string-append (number->string hours) ":"
+                     (number->string mins)))))
+
 ;; Warn function that does nothing
 (define warn
   (lambda (msg) #f))
@@ -218,13 +226,13 @@
         " on \""
         descr
         "\" for "
-        (number->string
+        (duration->string
          (time-second
           (time-difference (if (time? to)
                                to
                                (current-time 'time-utc))
                            from)))
-        " seconds\n")
+        "\n")
        ""))))
 
 (define db
