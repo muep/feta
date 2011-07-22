@@ -154,9 +154,10 @@
            (end-time (db-string->time (car (cdr tokens))))
            (description (string-join (cddr tokens) "")))
 
-      (acons 'start-time start-time
-             (acons 'end-time end-time
-                    (acons 'description description '()))))))
+      (list
+       (cons 'start-time start-time)
+       (cons 'end-time end-time)
+       (cons 'description description)))))
 
 (define session<?
   (lambda (s0 s1)
