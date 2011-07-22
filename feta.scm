@@ -149,15 +149,11 @@
 
 (define string->session
   (lambda (line)
-    (let* ((tokens (string-split line #\;))
-           (start-time (db-string->time (car tokens)))
-           (end-time (db-string->time (car (cdr tokens))))
-           (description (string-join (cddr tokens) "")))
-
+    (let ((tokens (string-split line #\;)))
       (list
-       (cons 'start-time start-time)
-       (cons 'end-time end-time)
-       (cons 'description description)))))
+       (cons 'start-time (db-string->time (car tokens)))
+       (cons 'end-time (db-string->time (cadr tokens)))
+       (cons 'description (string-join (cddr tokens) ""))))))
 
 (define session<?
   (lambda (s0 s1)
