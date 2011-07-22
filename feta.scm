@@ -338,7 +338,7 @@
  (want-start
   (let ((new-db (sort
                  (append
-                  ;; Old database with itse sessions closed
+                  ;; Old database with its sessions closed
                   (map (session-closer requested-time) db)
                   ;; And an element with the added session
                   (list (session-new requested-time requested-description)))
@@ -346,7 +346,7 @@
     (write-db new-db (open-file db-location "w"))))
  (want-end
   (let ((new-db (sort
-                 ;; Old database with itse sessions closed
+                 ;; Old database with its sessions closed
                  (map (session-closer requested-time) db)
                  session<?)))
     (write-db new-db (open-file db-location "w"))))
