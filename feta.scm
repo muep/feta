@@ -196,12 +196,16 @@
   (lambda (in-port)
     (read-lines in-port string->session)))
 
-(define db-location (string-append (getenv "HOME") "/.ttdb"))
+(define default-db-location (string-append (getenv "HOME") "/.ttdb"))
 (define read-db
-  (lambda ()
-    (sort
-     (parse-db-port (open-file db-location "r"))
-     session<?)))
+  (lambda (filename)
+    (catch
+     #t
+     (lambda ()
+       (sort
+        (parse-db-port (open-file filename "r"))
+        session<?))
+     (lambda _ '()))))
 
 (define write-db
   (lambda (db out)
@@ -232,12 +236,6 @@
                            from)))
         "\n")
        ""))))
-
-(define db
-  (catch #t
-         (lambda ()
-           (read-db))
-         (lambda _ '())))
 
 (define descriptions
   (lambda (db)
@@ -301,9 +299,12 @@
 
     (time
      (value #t)
-     (single-char #\t)
-     )))
+     (single-char #\t))
 
+    (file
+     (value #t)
+     (single-char #\f))
+    ))
 
 ;; Main program starts here.
 (define options
@@ -319,6 +320,11 @@
     (if timearg
         (permissive-string->time timearg)
         (current-time 'time-utc))))
+
+(define db-location
+  (option-ref options 'file default-db-location))
+
+(define db (read-db db-location))
 
 (define requested-description
   (option-ref options 'description
