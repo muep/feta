@@ -131,9 +131,10 @@
 
 (define session-new
   (lambda (time description)
-    (acons 'start-time time
-           (acons 'end-time #f
-                  (acons 'description description '())))))
+    (list
+     (cons 'start-time time)
+     (cons 'end-time #f)
+     (cons 'description description))))
 
 (define session-end-time
   (lambda (session)
