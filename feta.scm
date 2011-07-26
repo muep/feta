@@ -264,6 +264,26 @@
      (descriptions db))))
 
 
+(define session-today?
+  (lambda (session)
+    (let* ((cdate (current-date))
+           (today-start (date->time-utc
+                         (make-date 0 0 0 0
+                                    (date-day cdate)
+                                    (date-month cdate)
+                                    (date-year cdate)
+                                    (date-zone-offset cdate))))
+           (today-end (make-time 'time-utc
+                                 (time-nanosecond today-start)
+                                 (+ (time-second today-start) 86400))))
+      (and (time<=? today-start (cdr (assoc 'start-time session)))
+           (time>=? today-end (if (time? (session-end-time session))
+                                  (session-end-time session)
+                                  (current-time 'time-utc)))))))
+(define session-all
+  (lambda (session)
+    #t))
+
 ;; Actions:
 ;;   default
 ;;   info
@@ -305,7 +325,17 @@
               (file
                (value #t)
                (single-char #\f))
+
+              (filter-time
+               (value #t))
+
               ))
+
+           (time-filters
+            (list
+             (cons "today" session-today?)
+             (cons "always" session-all)))
+
 
            (options
             (getopt-long argv option-spec))
@@ -313,6 +343,10 @@
            (want-help (option-ref options 'help #f))
            (want-start  (option-ref options 'start #f))
            (want-end (option-ref options 'end #f))
+
+           (time-filter-name
+            (option-ref options 'filter-time "always"))
+
            (requested-time
             (let ((timearg (option-ref options 'time #f)))
               (if timearg
@@ -358,6 +392,7 @@
                        session<?)))
           (write-db new-db (open-file db-location "w"))))
 
-       (#t (display-sessionlist db))))))
+       (#t (let ((tfilter (cdr (assoc time-filter-name time-filters))))
+             (display-sessionlist (filter tfilter db))))))))
 
 (eta-like-main (command-line))
