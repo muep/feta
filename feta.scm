@@ -271,90 +271,93 @@
 ;;   end
 ;;
 
-(define argv (command-line))
+(define eta-like-main
+  (lambda (argv)
+    (let* ((helpmsg
+            (string-append
+             "Usage: "
+             (car argv)
+             " <options>\n"))
 
-(define helpmsg
-  (string-append
-   "Usage: "
-   (car argv)
-   " <options>\n"))
+           (option-spec
+            '((version
+               (value #f))
+              (help
+               (value #f)
+               (single-char #\h))
 
-(define option-spec
-  '((version (value #f))
-    (help
-     (value #f)
-     (single-char #\h))
+              (start
+               (value #f)
+               (single-char #\s))
 
-    (start
-     (value #f)
-     (single-char #\s))
+              (end
+               (value #f)
+               (single-char #\e))
 
-    (end
-     (value #f)
-     (single-char #\e))
+              (description
+               (value #t)
+               (single-char #\d))
 
-    (description
-     (value #t)
-     (single-char #\d))
+              (time
+               (value #t)
+               (single-char #\t))
 
-    (time
-     (value #t)
-     (single-char #\t))
+              (file
+               (value #t)
+               (single-char #\f))
+              ))
 
-    (file
-     (value #t)
-     (single-char #\f))
-    ))
+           (options
+            (getopt-long argv option-spec))
 
-;; Main program starts here.
-(define options
-  (getopt-long (command-line) option-spec))
+           (want-help (option-ref options 'help #f))
+           (want-start  (option-ref options 'start #f))
+           (want-end (option-ref options 'end #f))
+           (requested-time
+            (let ((timearg (option-ref options 'time #f)))
+              (if timearg
+                  (permissive-string->time timearg)
+                  (current-time 'time-utc))))
 
-(if (option-ref options 'help #f)
-    (begin
-      (display helpmsg)
-      (exit 0)))
+           (db-location
+            (option-ref options 'file default-db-location))
 
-(define requested-time
-  (let ((timearg (option-ref options 'time #f)))
-    (if timearg
-        (permissive-string->time timearg)
-        (current-time 'time-utc))))
+           (db (read-db db-location))
 
-(define db-location
-  (option-ref options 'file default-db-location))
+           (requested-description
+            (option-ref options 'description
+                        (if (null? db)
+                            "Default project"
+                            (cdr (assoc 'description (car (last-pair db)))))))
 
-(define db (read-db db-location))
+           )
 
-(define requested-description
-  (option-ref options 'description
-              (if (null? db)
-                  "Default project"
-                  (cdr (assoc 'description (car (last-pair db)))))))
+      (cond
+       (want-help
+        (begin
+          (display helpmsg)
+          (exit 0)))
 
-(define want-start  (option-ref options 'start #f))
-(define want-end (option-ref options 'end #f))
+       (want-start
+        (let ((new-db (sort
+                       (append
+                        ;; Old database with its sessions closed
+                        (map (session-closer requested-time) db)
+                        ;; And an element with the added session
+                        (list (session-new
+                               requested-time
+                               requested-description)))
+                       session<?)))
+          (write-db new-db (open-file db-location "w"))))
 
-(if (and want-start want-end)
-    (begin
-      (display "Can not both start and end\n")
-      (display helpmsg)
-      (exit 1)))
 
-(cond
- (want-start
-  (let ((new-db (sort
-                 (append
-                  ;; Old database with its sessions closed
-                  (map (session-closer requested-time) db)
-                  ;; And an element with the added session
-                  (list (session-new requested-time requested-description)))
-                 session<?)))
-    (write-db new-db (open-file db-location "w"))))
- (want-end
-  (let ((new-db (sort
-                 ;; Old database with its sessions closed
-                 (map (session-closer requested-time) db)
-                 session<?)))
-    (write-db new-db (open-file db-location "w"))))
- (#t (display-sessionlist db)))
+       (want-end
+        (let ((new-db (sort
+                       ;; Old database with its sessions closed
+                       (map (session-closer requested-time) db)
+                       session<?)))
+          (write-db new-db (open-file db-location "w"))))
+
+       (#t (display-sessionlist db))))))
+
+(eta-like-main (command-line))
