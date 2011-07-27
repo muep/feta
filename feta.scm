@@ -67,6 +67,8 @@
   (lambda (l)
     (car (last-pair l))))
 
+;; A wrapper for reducing boilerplate in accessing alist
+;; members
 (define get
   (lambda (sym alist)
     (let ((tmp (assoc sym alist)))
@@ -150,7 +152,7 @@
 (define session-closer
   (lambda (end-time)
     (lambda (session)
-      (if (cdr (assoc 'end-time session))
+      (if (get 'end-time session)
           session
           (assoc-set! session 'end-time end-time)))))
 
@@ -164,14 +166,14 @@
 
 (define session<?
   (lambda (s0 s1)
-    (time<? (cdr (assoc 'start-time s0))
-            (cdr (assoc 'start-time s1)))))
+    (time<? (get 'start-time s0)
+            (get 'start-time s1))))
 
 (define session->string
   (lambda (session)
-    (let ((start-time (cdr (assoc 'start-time session)))
-          (end-time (cdr (assoc 'end-time session)))
-          (description (cdr (assoc 'description session))))
+    (let ((start-time (get 'start-time session))
+          (end-time (get 'end-time session))
+          (description (get 'description session)))
       (string-append
        (number->string (time-second start-time))
        ";"
@@ -222,9 +224,9 @@
 
 (define session->userline
   (lambda (session)
-    (let* ((from  (cdr (assoc 'start-time session)))
-           (to    (cdr (assoc 'end-time session)))
-           (descr (cdr (assoc 'description session))))
+    (let* ((from  (get 'start-time session))
+           (to    (get 'end-time session))
+           (descr (get 'description session)))
       (string-join
        (list
         "From "
@@ -246,12 +248,12 @@
     (uniquify
      (map
       (lambda (session)
-        (cdr (assoc 'description session))) db))))
+        (get 'description session)) db))))
 
 (define session<?
   (lambda (s0 s1)
-    (time<? (cdr (assoc 'start-time s0))
-            (cdr (assoc 'start-time s1)))))
+    (time<? (get 'start-time s0)
+            (get 'start-time s1))))
 
 ;; Some simple display functions for
 ;; our simple cases.
@@ -280,9 +282,9 @@
            (today-end (make-time 'time-utc
                                  (time-nanosecond today-start)
                                  (+ (time-second today-start) 86400))))
-      (and (time<=? today-start (cdr (assoc 'start-time session)))
+      (and (time<=? today-start (get 'start-time session))
            (time>=? today-end (time-or-now
-                               (cdr (assoc 'end-time session))))))))
+                               (get 'end-time session)))))))
 
 (define session-all
   (lambda (session)
@@ -366,7 +368,7 @@
             (option-ref options 'description
                         (if (null? db)
                             "Default project"
-                            (cdr (assoc 'description (car (last-pair db)))))))
+                            (get 'description (car (last-pair db))))))
 
            )
 
@@ -397,13 +399,13 @@
           (write-db new-db (open-file db-location "w"))))
 
        (#t
-        (let* ((tfilter (cdr (assoc time-filter-name time-filters)))
+        (let* ((tfilter (get time-filter-name time-filters))
                (interesting-sessions (filter tfilter db))
                (total-seconds
                 (fold (lambda (cur sum)
                         (+ sum (- (time-second (time-or-now
-                                                (cdr (assoc 'end-time cur))))
-                                  (time-second (cdr (assoc 'start-time cur))))))
+                                                (get 'end-time cur)))
+                                  (time-second (get 'start-time cur)))))
                       0
                       interesting-sessions)))
           (display-sessionlist interesting-sessions)
