@@ -67,6 +67,11 @@
   (lambda (l)
     (car (last-pair l))))
 
+(define get
+  (lambda (sym alist)
+    (let ((tmp (assoc sym alist)))
+      (if (eq? tmp #f) #f (cdr tmp)))))
+
 ;; Date conversion code
 (define full-date-format "~Y-~m-~dT~H:~M:~S")
 (define date-formats
