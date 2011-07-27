@@ -368,7 +368,7 @@
             (option-ref options 'description
                         (if (null? db)
                             "Default project"
-                            (get 'description (car (last-pair db))))))
+                            (get 'description (last db)))))
 
            )
 
