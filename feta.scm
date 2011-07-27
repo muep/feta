@@ -230,9 +230,7 @@
         "\" for "
         (duration->string
          (time-second
-          (time-difference (if (time? to)
-                               to
-                               (current-time 'time-utc))
+          (time-difference (time-or-now to)
                            from)))
         "\n")
        ""))))
