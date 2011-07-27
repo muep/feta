@@ -44,6 +44,7 @@
 (use-modules (ice-9 getopt-long))
 (use-modules (ice-9 rdelim))
 
+(use-modules (srfi srfi-1))
 (use-modules (srfi srfi-19))
 
 ;; Generic list utilities (TODO: find out if this already
@@ -390,7 +391,21 @@
                        session<?)))
           (write-db new-db (open-file db-location "w"))))
 
-       (#t (let ((tfilter (cdr (assoc time-filter-name time-filters))))
-             (display-sessionlist (filter tfilter db))))))))
+       (#t
+        (let* ((tfilter (cdr (assoc time-filter-name time-filters)))
+               (interesting-sessions (filter tfilter db))
+               (total-seconds
+                (fold (lambda (cur sum)
+                        (+ sum (- (time-second (time-or-now
+                                                (cdr (assoc 'end-time cur))))
+                                  (time-second (cdr (assoc 'start-time cur))))))
+                      0
+                      interesting-sessions)))
+          (display-sessionlist interesting-sessions)
+          (display "total: ")
+          (display (duration->string total-seconds))
+          (newline)
+          ))))))
+
 
 (eta-like-main (command-line))
