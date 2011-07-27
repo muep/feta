@@ -276,9 +276,9 @@
                                  (time-nanosecond today-start)
                                  (+ (time-second today-start) 86400))))
       (and (time<=? today-start (cdr (assoc 'start-time session)))
-           (time>=? today-end (if (time? (session-end-time session))
-                                  (session-end-time session)
-                                  (current-time 'time-utc)))))))
+           (time>=? today-end (time-or-now
+                               (cdr (assoc 'end-time session))))))))
+
 (define session-all
   (lambda (session)
     #t))
