@@ -217,6 +217,22 @@
 
             (#t #t)))))
 
+(define time-range-contains?
+  (lambda (r0_ r1_)
+    (let* ((should-swap (time<? (get 'start r1) (get 'start r0)))
+           ;; Have known ordering for input ranges
+           (r0 (if should-swap r1_ r0_))
+           (r1 (if should-swap r0_ r1_)))
+
+      (cond ((not (time-range-overlaps? r0 r1))
+             #f)
+
+            ((time<? (get 'end r0) (get 'end r1))
+             ;; First range ends before the second range
+             #f)
+
+            (#t #t)))))
+
 ;; Like map but for lines in port
 (define read-lines-with
   (lambda (port f prevs)
