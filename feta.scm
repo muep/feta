@@ -95,6 +95,10 @@
       (string-append (number->string hours) ":"
                      (number->string mins)))))
 
+(define time-or-now
+  (lambda (t)
+    (if (time? t) t (current-time 'time-utc))))
+
 ;; Warn function that does nothing
 (define warn
   (lambda (msg) #f))
