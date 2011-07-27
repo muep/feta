@@ -183,6 +183,41 @@
        description
        ";\n"))))
 
+;; A structure that defines a slice of time
+(define time-range-new
+  (lambda (start end)
+    (list
+     (cons 'start start)
+     (cons 'end end))))
+
+(define time-range-start (lambda (range) (get 'start range)))
+(define time-range-end (lambda (range) (get 'end range)))
+(define time-range-length
+  (lambda (range)
+    (if (and (time? (get 'start range))
+             (time? (get 'end range)))
+        (time-difference (get 'end range) (get 'start range))
+        #f)))
+
+(define time-range-overlaps?
+  (lambda (r0_ r1_)
+    (let* ((should-swap (time<? (get 'start r1) (get 'start r0)))
+           ;; Have known ordering for input ranges
+           (r0 (if should-swap r1_ r0_))
+           (r1 (if should-swap r0_ r1_)))
+
+      (cond ((or (eq? (time-range-length r0) #f)
+                 (eq? (time-range-length r1) #f))
+             ;; Ranges are not completely defined
+             #f)
+
+            ((time<? (get 'end r0) (get 'start r1))
+             ;; First time ends before latter one starts
+             #f)
+
+            (#t #t)))))
+
+;; Like map but for lines in port
 (define read-lines-with
   (lambda (port f prevs)
     (let ((line (read-line port)))
