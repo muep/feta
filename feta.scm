@@ -140,15 +140,11 @@
      (cons 'end-time #f)
      (cons 'description description))))
 
-(define session-end-time
-  (lambda (session)
-    (cdr (assoc 'end-time session))))
-
 ;; Return a function that closes sessions
 (define session-closer
   (lambda (end-time)
     (lambda (session)
-      (if (session-end-time session)
+      (if (cdr (assoc 'end-time session))
           session
           (assoc-set! session 'end-time end-time)))))
 
