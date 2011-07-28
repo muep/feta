@@ -107,6 +107,38 @@
   (lambda (t)
     (if (time? t) t (current-time 'time-utc))))
 
+(define day-duration (make-time 'time-duration 0 86400))
+(define week-seconds (* 7 86400))
+(define week-duration (make-time 'time-duration 0 week-seconds))
+
+(define time->day-start-time
+  (lambda (t)
+    (let ((d (time-utc->date t)))
+      (date->time-utc
+       (make-date 0 0 0 0 ;; nanos secs mins hours
+                  (date-day d)
+                  (date-month d)
+                  (date-year d)
+                  (date-zone-offset d))))))
+
+(define time->day-end-time
+  (lambda (t)
+    (add-duration (time->day-start-time t) day-duration)))
+
+(define time->week-start-time
+  (lambda (t)
+    (let* ((monday-offset (modulo
+                           (- (date-week-day (time-utc->date t)) 1)
+                           7))
+           (day-start (time->day-start-time t)))
+      (subtract-duration
+       day-start
+       (make-time 'time-duration 0 (* monday-offset week-seconds))))))
+
+(define time->week-end-time
+  (lambda (t)
+    (add-duration (time->week-start-time t) week-duration)))
+
 ;; Warn function that does nothing
 (define warn
   (lambda (msg) #f))
@@ -182,6 +214,13 @@
        ";"
        description
        ";\n"))))
+
+(define session-time-range
+  (lambda (session)
+    (time-range-new
+     (get 'start-time session)
+     (time-or-now (get 'end-time session)))))
+
 
 ;; A structure that defines a slice of time
 (define time-range-new
