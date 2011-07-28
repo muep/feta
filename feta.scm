@@ -221,6 +221,11 @@
      (get 'start-time session)
      (time-or-now (get 'end-time session)))))
 
+(define session-in-range?
+  (lambda (session range)
+    (time-range-contains?
+     range
+     (session-time-range session))))
 
 ;; A structure that defines a slice of time
 (define time-range-new
