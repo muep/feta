@@ -337,6 +337,31 @@
            (time>=? today-end (time-or-now
                                (get 'end-time session)))))))
 
+(define session-thisweek?
+  (lambda (session)
+    (let* ((cdate (current-date))
+           (today-start (date->time-utc
+                         (make-date 0 0 0 0
+                                    (date-day cdate)
+                                    (date-month cdate)
+                                    (date-year cdate)
+                                    (date-zone-offset cdate))))
+           (thisweek-start
+            (make-time 'time-utc
+                       (time-nanosecond today-start)
+                       (- (time-second today-start)
+                          (* (modulo (+ (date-week-day cdate) -1) 7)
+                             86400))))
+           (thisweek-end
+            (make-time 'time-utc
+                       (time-nanosecond thisweek-start)
+                       (+ (time-second today-start)
+                          (* 7 86400)))))
+      (and (time<=? thisweek-start (get 'start-time session))
+           (time>=? thisweek-end (time-or-now
+                                  (get 'end-time session)))))))
+
+
 (define session-all
   (lambda (session)
     #t))
@@ -391,6 +416,7 @@
            (time-filters
             (list
              (cons "today" session-today?)
+             (cons "thisweek" session-thisweek?)
              (cons "always" session-all)))
 
 
