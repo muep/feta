@@ -149,6 +149,83 @@
 (define warn
   (lambda (msg) #f))
 
+(define simple-time-matcher
+  (lambda (format accuracy)
+    (lambda (str)
+      (catch
+       #t
+       (lambda ()
+         (cons (date->time-utc (string->date str format))
+               accuracy))
+       (lambda _ #f)))))
+
+(define last-occurrence-of-clock-time
+  (lambda (hours minutes seconds)
+    (if (or (>= hours 24) (>= minutes 60) (>= seconds 60))
+        (throw 'time-semantics)
+        (let* ((d (current-date))
+               (t (current-time 'time-utc))
+               (d2 (make-date
+                    (date-nanosecond d)
+                    seconds minutes hours
+                    (date-day d)
+                    (date-month d)
+                    (date-year d)
+                    (date-zone-offset d)))
+               (t2 (date->time-utc d2)))
+          (if (time>=? t2 t)
+              ;; Got a time in the future, subtract one day
+              (subtract-duration t2 day-duration)
+              t2)))))
+
+;; This is a bit sucky but it tries to handle a lot of cases.
+(define clock-time-matcher
+  (lambda (str)
+    (catch
+     #t
+     (lambda ()
+       (let* ((pieces (string-split str #\:))
+              (hours (string->number (car pieces)))
+              (minutes (if (< (length pieces) 2)
+                           0
+                           (string->number (cadr pieces))))
+              (seconds (if (< (length pieces) 3)
+                           0
+                           (string->number (caddr pieces))))
+              (got-extra (< 3 (length pieces))))
+
+         (if (and (not got-extra)
+                  (all number? (list hours minutes seconds))
+                  (< hours 24)
+                  (< minutes 60)
+                  (< seconds 60))
+             (cons (last-occurrence-of-clock-time hours minutes seconds)
+                   (case (length pieces)
+                     ((1) 3600)
+                     ((2) 60)
+                     ((3) 1)
+                     (else #f))))))
+     (lambda _ #f))))
+
+;; Define the list of matchers we will use for user-supplied
+;; times. User-supplied times will be matched against these
+(define time-matchers
+  (list
+   (simple-time-matcher "~Y-~m-~dT~H:~M:~S" 1)
+   (simple-time-matcher "~Y-~m-~dT~H:~M" 60)
+   (simple-time-matcher "~Y-~m-~dT~H" 3600)
+   (simple-time-matcher "~Y-~m-~d" 86400)
+   clock-time-matcher))
+
+(define match-timestr
+  (lambda (str matchers)
+    (if (null? matchers)
+        #f
+        (let ((tpair ((car matchers) str)))
+          (if (eq? #f tpair)
+              (match-timestr str (cdr matchers))
+              tpair)))))
+
 (define fallbacky-string->time
   (lambda (str formats)
     (if (null? formats)
