@@ -67,6 +67,12 @@
   (lambda (l)
     (car (last-pair l))))
 
+(define all
+  (lambda (ok? l)
+    (cond ((null? l) #t)
+          ((not (ok? (car l))) #f)
+          (#t (all ok? (cdr l))))))
+
 ;; A wrapper for reducing boilerplate in accessing alist
 ;; members
 (define get
