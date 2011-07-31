@@ -228,24 +228,16 @@
               tpair)))))
 
 (define fallbacky-string->time
-  (lambda (str formats)
-    (if (null? formats)
-        ;; We ran out of formats.
-        #f
-        ;; Try to parse with the first format in format list.
-        (catch 'misc-error
-               ;; The actual attepmt to convert is here.
-               (lambda ()
-                 (date->time-utc (string->date str (car formats))))
-               ;; On failure, just keep trying with the rest of the
-               ;; format list.
-               (lambda _
-                 (fallbacky-string->time str (cdr formats)))))))
+  (lambda (str matchers)
+    (let ((tp (match-timestr str matchers)))
+      (if (eq? tp #f)
+          #f
+          (car tp)))))
 
 ;; Just a convenience wrapper
 (define permissive-string->time
   (lambda (str)
-    (fallbacky-string->time str date-formats)))
+    (fallbacky-string->time str time-matchers)))
 
 ;; Also need a way to extract times from database format.
 ;; This is easier because we need not support so many forms of input.
