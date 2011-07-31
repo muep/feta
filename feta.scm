@@ -140,7 +140,7 @@
            (day-start (time->day-start-time t)))
       (subtract-duration
        day-start
-       (make-time 'time-duration 0 (* monday-offset week-seconds))))))
+       (make-time 'time-duration 0 (* monday-offset day-seconds))))))
 
 (define time->week-end-time
   (lambda (t)
