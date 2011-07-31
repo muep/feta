@@ -355,6 +355,48 @@
 
             (#t #t)))))
 
+(define today-matcher
+  (lambda (str)
+    (let ((now (current-time 'time-utc)))
+      (if (equal? str "today")
+          (time-range-new (time->day-start-time now)
+                          (time->day-end-time now))))))
+
+(define thisweek-matcher
+  (lambda (str)
+    (let ((now (current-time 'time-utc)))
+      (if (equal? str "thisweek")
+          (time-range-new (time->week-start-time now)
+                          (time->week-end-time now))))))
+
+(define time-matcher->time-range-matcher
+  (lambda (tm)
+    (lambda (str)
+      (let ((t+a (tm str)))
+        (if (eq? t+a #f)
+            #f
+            (time+accuracy->time-range t+a))))))
+
+(define string+matchers->time-range
+  (lambda (str matchers)
+    (if (null? matchers)
+        #f
+        (let ((match-result ((car matchers) str)))
+          (if (eq? match-result #f)
+              (string->time-range str (cdr matchers))
+              match-result)))))
+
+(define time-range-matchers
+  (list
+   today-matcher
+   thisweek-matcher))
+
+(define string->time-range
+  (lambda (str)
+    (string+matchers->time-range
+     str
+     time-range-matchers)))
+
 ;; Like map but for lines in port
 (define read-lines-with
   (lambda (port f prevs)
