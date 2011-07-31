@@ -81,15 +81,6 @@
       (if (eq? tmp #f) #f (cdr tmp)))))
 
 ;; Date conversion code
-(define full-date-format "~Y-~m-~dT~H:~M:~S")
-(define date-formats
-  (list full-date-format
-        "~Y-~m-~dT~H:~M"
-        "~Y-~m-~d"))
-(define time-formats
-  '("~H:~M:~S"
-    "~H:~M"))
-
 (define user-time-format
   "~Y-~m-~dT~H:~M")
 (define user-nonexistent-time-format
