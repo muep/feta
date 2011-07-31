@@ -199,6 +199,17 @@
                      (else #f))))))
      (lambda _ #f))))
 
+(define time+accuracy->time-range
+  (lambda (t+a)
+    (time-range-new
+     (car t+a)
+     (add-duration
+      (car t+a)
+      (make-time 'time-duration
+                 (time-nanosecond (car t+a))
+                 (+ (time-second (car t+a))
+                    (cdr t+a)))))))
+
 ;; Define the list of matchers we will use for user-supplied
 ;; times. User-supplied times will be matched against these
 (define time-matchers
