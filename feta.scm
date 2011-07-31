@@ -113,7 +113,8 @@
   (lambda (t)
     (if (time? t) t (current-time 'time-utc))))
 
-(define day-duration (make-time 'time-duration 0 86400))
+(define day-seconds 86400)
+(define day-duration (make-time 'time-duration 0 day-seconds))
 (define week-seconds (* 7 86400))
 (define week-duration (make-time 'time-duration 0 week-seconds))
 
