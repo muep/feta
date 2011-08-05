@@ -80,6 +80,20 @@
     (let ((tmp (assoc sym alist)))
       (if (eq? tmp #f) #f (cdr tmp)))))
 
+;; A recursive getter for getting from nested alists
+(define getr
+  (lambda (syms alist)
+    (let ((tmp (catch 'wrong-type-arg
+                (lambda ()
+                  (assoc (car syms) alist))
+                (lambda _ #f)))
+          (remaining-syms (cdr syms)))
+      (cond
+       ((eq? #f tmp) #f)
+       ((null? remaining-syms) (cdr tmp))
+       (#t (getr remaining-syms (cdr tmp)))))))
+
+
 ;; Date conversion code
 (define user-time-format
   "~Y-~m-~dT~H:~M")
