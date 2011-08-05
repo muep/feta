@@ -385,10 +385,16 @@
               (string->time-range str (cdr matchers))
               match-result)))))
 
+;; Lump all supposedly working matchers for time-range
+;; here.
 (define time-range-matchers
-  (list
-   today-matcher
-   thisweek-matcher))
+  (append
+   ;; First the fixed ones
+   (list
+    today-matcher
+    thisweek-matcher)
+   ;; And then some generated from time matchers
+   (map time-matcher->time-range-matcher time-matchers)))
 
 (define string->time-range
   (lambda (str)
