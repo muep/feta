@@ -316,9 +316,18 @@
 
 (define session-in-range?
   (lambda (session range)
-    (time-range-contains?
+    (time-range-contains-time-range?
      range
      (session-time-range session))))
+
+(define session-in-range
+  (lambda (range)
+    (lambda (session)
+      (time-range-contains-time-range?
+       range
+       (time-range-new
+        (get 'start-time session)
+        (time-or-now (get 'end-time session)))))))
 
 ;; A structure that defines a slice of time
 (define time-range-new
@@ -354,35 +363,35 @@
 
             (#t #t)))))
 
-(define time-range-contains?
-  (lambda (r0_ r1_)
-    (let* ((should-swap (time<? (get 'start r1_) (get 'start r0_)))
-           ;; Have known ordering for input ranges
-           (r0 (if should-swap r1_ r0_))
-           (r1 (if should-swap r0_ r1_)))
-
-      (cond ((not (time-range-overlaps? r0 r1))
-             #f)
-
-            ((time<? (get 'end r0) (get 'end r1))
-             ;; First range ends before the second range
-             #f)
-
-            (#t #t)))))
+;; Does r0 contain r1?
+(define time-range-contains-time-range?
+  (lambda (r0 r1)
+    (and
+     ;; Both ranges fully defined
+     (not (or (eq? (time-range-length r0) #f)
+              (eq? (time-range-length r1) #f)))
+     ;; r0 starts first
+     (time<? (time-range-start r0)
+             (time-range-start r1))
+     ;; r0 ends last
+     (time>? (time-range-start r0)
+             (time-range-start r1)))))
 
 (define today-matcher
   (lambda (str)
     (let ((now (current-time 'time-utc)))
       (if (equal? str "today")
           (time-range-new (time->day-start-time now)
-                          (time->day-end-time now))))))
+                          (time->day-end-time now))
+          #f))))
 
 (define thisweek-matcher
   (lambda (str)
     (let ((now (current-time 'time-utc)))
       (if (equal? str "thisweek")
           (time-range-new (time->week-start-time now)
-                          (time->week-end-time now))))))
+                          (time->week-end-time now))
+          #f))))
 
 (define time-matcher->time-range-matcher
   (lambda (tm)
@@ -505,48 +514,6 @@
        (newline))
      (descriptions db))))
 
-
-(define session-today?
-  (lambda (session)
-    (let* ((cdate (current-date))
-           (today-start (date->time-utc
-                         (make-date 0 0 0 0
-                                    (date-day cdate)
-                                    (date-month cdate)
-                                    (date-year cdate)
-                                    (date-zone-offset cdate))))
-           (today-end (make-time 'time-utc
-                                 (time-nanosecond today-start)
-                                 (+ (time-second today-start) 86400))))
-      (and (time<=? today-start (get 'start-time session))
-           (time>=? today-end (time-or-now
-                               (get 'end-time session)))))))
-
-(define session-thisweek?
-  (lambda (session)
-    (let* ((cdate (current-date))
-           (today-start (date->time-utc
-                         (make-date 0 0 0 0
-                                    (date-day cdate)
-                                    (date-month cdate)
-                                    (date-year cdate)
-                                    (date-zone-offset cdate))))
-           (thisweek-start
-            (make-time 'time-utc
-                       (time-nanosecond today-start)
-                       (- (time-second today-start)
-                          (* (modulo (+ (date-week-day cdate) -1) 7)
-                             86400))))
-           (thisweek-end
-            (make-time 'time-utc
-                       (time-nanosecond thisweek-start)
-                       (+ (time-second today-start)
-                          (* 7 86400)))))
-      (and (time<=? thisweek-start (get 'start-time session))
-           (time>=? thisweek-end (time-or-now
-                                  (get 'end-time session)))))))
-
-
 (define session-all
   (lambda (session)
     #t))
@@ -598,22 +565,12 @@
 
               ))
 
-           (time-filters
-            (list
-             (cons "today" session-today?)
-             (cons "thisweek" session-thisweek?)
-             (cons "always" session-all)))
-
-
            (options
             (getopt-long argv option-spec))
 
            (want-help (option-ref options 'help #f))
            (want-start  (option-ref options 'start #f))
            (want-end (option-ref options 'end #f))
-
-           (time-filter-name
-            (option-ref options 'filter-time "always"))
 
            (requested-time
             (let ((timearg (option-ref options 'time #f)))
@@ -631,6 +588,16 @@
                         (if (null? db)
                             "Default project"
                             (get 'description (last db)))))
+
+           (time-filter
+            (catch #t
+                   (lambda ()
+                     (session-in-range
+                      (string+matchers->time-range
+                       (option-ref options 'filter-time "")
+                       time-range-matchers)))
+                   (lambda _
+                     session-all)))
 
            )
 
@@ -661,8 +628,7 @@
           (write-db new-db (open-file db-location "w"))))
 
        (#t
-        (let* ((tfilter (get time-filter-name time-filters))
-               (interesting-sessions (filter tfilter db))
+        (let* ((interesting-sessions (filter time-filter db))
                (total-seconds
                 (fold (lambda (cur sum)
                         (+ sum (- (time-second (time-or-now
