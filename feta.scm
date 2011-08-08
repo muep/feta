@@ -212,7 +212,8 @@
                      ((1) 3600)
                      ((2) 60)
                      ((3) 1)
-                     (else #f))))))
+                     (else #f)))
+             #f)))
      (lambda _ #f))))
 
 (define time+accuracy->time-range
