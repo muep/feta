@@ -444,6 +444,24 @@
                    (read-lines-with port f prevs)))
           prevs))))
 
+;; A better map for ports
+(define map-filter-port
+  (lambda (mapf want-this? port)
+    (let ((line (read-line port)))
+      (if (string? line)
+          ;; Try to parse and add if no exceptions
+          (catch #t
+                 (lambda ()
+                   (let ((parsed (mapf line)))
+                     (if (want-this? parsed)
+                         (cons parsed (map-filter-port mapf want-this? port))
+                         (map-filter-port mapf want-this? port))))
+                 (lambda _
+                   (map-filter-port mapf want-this? port)))
+          '()))))
+
+
+
 (define read-lines
   (lambda (port f)
     (read-lines-with port f '())))
