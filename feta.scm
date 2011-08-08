@@ -407,7 +407,7 @@
         #f
         (let ((match-result ((car matchers) str)))
           (if (eq? match-result #f)
-              (string->time-range str (cdr matchers))
+              (string+matchers->time-range str (cdr matchers))
               match-result)))))
 
 ;; Lump all supposedly working matchers for time-range
