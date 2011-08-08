@@ -77,7 +77,9 @@
 ;; members
 (define get
   (lambda (sym alist)
-    (let ((tmp (assoc sym alist)))
+    (let ((tmp (if (list? alist)
+                   (assoc sym alist)
+                   #f)))
       (if (eq? tmp #f) #f (cdr tmp)))))
 
 ;; A recursive getter for getting from nested alists
