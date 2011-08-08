@@ -264,6 +264,8 @@
                         (string->number str)))
            (lambda _ #f))))
 
+;; A session "type" - Currently just an alist of the
+;; relevant properties.
 (define session-new
   (lambda (time description)
     (list
