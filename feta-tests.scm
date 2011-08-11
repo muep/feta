@@ -60,6 +60,23 @@
          "Just dump the session list to verify it
           has something sensible in it"
          (display-sessionlist sample-db))
+       (lambda ()
+         (let ((aw2-sessions
+                (filter (lambda (session)
+                          (session-in-range? session augw2-range))
+                        sample-db)))
+           (cond ((not (equal? (length aw2-sessions) 1))
+                  (throw 'FAIL
+                         (string-append
+                          "Should have only one session in august w2, "
+                          "instead got "
+                          (number->string (length aw2-sessions)))))
+                 ((not (equal? (get 'description
+                                    (car aw2-sessions))
+                               "feta4"))
+                  (throw 'FAIL "Did not get the feta4 session"))
+                 (#t 'OK))))
+
        )
       )
      ;; Store information about failures here
