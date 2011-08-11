@@ -352,7 +352,7 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 
 (define time-range-overlaps?
   (lambda (r0_ r1_)
-    (let* ((should-swap (time<? (get 'start r1) (get 'start r0)))
+    (let* ((should-swap (time<? (get 'start r1_) (get 'start r0_)))
            ;; Have known ordering for input ranges
            (r0 (if should-swap r1_ r0_))
            (r1 (if should-swap r0_ r1_)))
