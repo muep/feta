@@ -101,6 +101,7 @@
                        "was not in big range")))))
 
        (lambda ()
+         "August week 2 sessions"
          (let ((aw2-sessions
                 (filter (lambda (session)
                           (session-in-range? session augw2-range))
@@ -120,7 +121,7 @@
        )
       )
      ;; Store information about failures here
-     (fail-messages '()))
+     (fail-count 0))
 
   (for-each
    (lambda (test)
@@ -128,21 +129,29 @@
       ;; Catch all...
       #t
       ;; in the current test...
-      test
+      (lambda ()
+        (display (string-append
+                  "TEST "
+                  (if (string? (procedure-documentation test))
+                      (procedure-documentation test)
+                      "(UNKNOWN)")
+                  ": "))
+        (test)
+        (display "PASS\n"))
       ;; and add exceptions thrown to the
       ;; fail-messages list
-      (lambda _
-        (set! fail-messages
-              (cons _ fail-messages)))))
+      (lambda fail
+        (set! fail-count (+ 1 fail-count))
+        (display "FAIL:\n")
+        (display (cadr fail))
+        (newline))))
    tests)
 
-  (if (equal? (length fail-messages) 0)
+  (if (equal? fail-count 0)
       (begin
         (display "All tests passed! great!")
         (newline))
-      (for-each
-       (lambda (fail)
-         (display "FAIL: ")
-         (display fail)
-         (newline))
-       fail-messages)))
+      (begin
+        (display "FAILED ")
+        (display (number->string fail-count))
+        (display " tests\n"))))
