@@ -81,7 +81,7 @@
              (throw 'FAIL "Ranges 2 and 1 should overlap"))
             ((time-range-overlaps? range2 range0)
              (throw 'FAIL "Ranges 2 and 0 should not overlap"))
-            (#f 'OK))))
+            (#t 'OK))))
 
        (lambda ()
          "session-in-range? accepts something"
@@ -126,8 +126,8 @@
   (for-each
    (lambda (test)
      (catch
-      ;; Catch all...
-      #t
+      ;; Catch test failures...
+      'FAIL
       ;; in the current test...
       (lambda ()
         (display (string-append
