@@ -7,15 +7,26 @@
 
 (define sample-db
   (list
-   ;; A session on 2011-08-01 from 0800 to 1100
+   ;; Session on last week of July
+   (list
+    (cons 'start-time (make-time 'time-utc 0 1311829200))
+    (cons 'end-time (make-time 'time-utc 0 1311840000))
+    (cons 'description "feta"))
+
+   ;; A couple of sessions in first week of August
    (list
     (cons 'start-time (make-time 'time-utc 0 1312174800))
     (cons 'end-time (make-time 'time-utc 0 1312185600))
     (cons 'description "feta"))
-   ;; Another similar session from 1200 to 1600
    (list
     (cons 'start-time (make-time 'time-utc 0 1312189200))
     (cons 'end-time (make-time 'time-utc 0 1312203600))
+    (cons 'description "feta"))
+
+   ;; A session on second week of August
+   (list
+    (cons 'start-time (make-time 'time-utc 0 1312952400))
+    (cons 'end-time (make-time 'time-utc 0 1312963200))
     (cons 'description "feta"))))
 
 (let
