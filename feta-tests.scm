@@ -62,6 +62,28 @@
          (display-sessionlist sample-db))
 
        (lambda ()
+         "time-range-overlaps?"
+         (let ((range0 (time-range-new
+                        (make-time 'time-utc 0 1300000000)
+                        (make-time 'time-utc 0 1300200000)))
+               (range1 (time-range-new
+                        (make-time 'time-utc 0 1300100000)
+                        (make-time 'time-utc 0 1300300000)))
+               (range2 (time-range-new
+                        (make-time 'time-utc 0 1300250000)
+                        (make-time 'time-utc 0 1300400000))))
+           (cond
+            ((time-range-overlaps? range0 range2)
+             (throw 'FAIL "Ranges 0 and 2 should not overlap"))
+            ((not (time-range-overlaps? range0 range1))
+             (throw 'FAIL "Ranges 0 and 1 should overlap"))
+            ((not (time-range-overlaps? range2 range1))
+             (throw 'FAIL "Ranges 2 and 1 should overlap"))
+            ((time-range-overlaps? range2 range0)
+             (throw 'FAIL "Ranges 2 and 0 should not overlap"))
+            (#f 'OK))))
+
+       (lambda ()
          "session-in-range? accepts something"
          (let ((big-range (time-range-new
                            (make-time 'time-utc 0 1300000000)
