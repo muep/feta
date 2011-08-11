@@ -3,19 +3,34 @@
 
 (load "feta.scm")
 
+(use-modules (srfi srfi-19))
+
+(define sample-db
+  (list
+   ;; A session on 2011-08-01 from 0800 to 1100
+   (list
+    (cons 'start-time (make-time 'time-utc 0 1312174800))
+    (cons 'end-time (make-time 'time-utc 0 1312185600))
+    (cons 'description "feta"))
+   ;; Another similar session from 1200 to 1600
+   (list
+    (cons 'start-time (make-time 'time-utc 0 1312189200))
+    (cons 'end-time (make-time 'time-utc 0 1312203600))
+    (cons 'description "feta"))))
 
 (let
     (
-     ;; Store information about failures here
-     (fail-messages '())
-
      ;; List of test thunks
      (tests
       (list
        (lambda ()
-         (throw 'foo 'bar))
-       (lambda ()
-         #t))))
+         "Just dump the session list to verify it
+          has something sensible in it"
+         (display-sessionlist sample-db))
+       )
+      )
+     ;; Store information about failures here
+     (fail-messages '()))
 
   (for-each
    (lambda (test)
