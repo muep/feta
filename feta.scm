@@ -379,8 +379,8 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
      (time<? (time-range-start r0)
              (time-range-start r1))
      ;; r0 ends last
-     (time>? (time-range-start r0)
-             (time-range-start r1)))))
+     (time>? (time-range-end r0)
+             (time-range-end r1)))))
 
 (define today-matcher
   (lambda (str)
