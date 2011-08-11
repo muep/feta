@@ -80,6 +80,27 @@
         (throw 'FAIL "Ranges 2 and 0 should not overlap"))
        (#t 'OK)))))
 
+(define time-range-contains-time-range?-test
+  (lambda ()
+    "time-range-contains-time-range?"
+    (let ((range0 (time-range-new
+                   (make-time 'time-utc 0 1300000000)
+                   (make-time 'time-utc 0 1300200000)))
+          (range1 (time-range-new
+                   (make-time 'time-utc 0 1300100000)
+                   (make-time 'time-utc 0 1300150000)))
+          (range2 (time-range-new
+                   (make-time 'time-utc 0 1300250000)
+                   (make-time 'time-utc 0 1300400000))))
+      (cond
+       ((not (time-range-contains-time-range? range0 range1))
+        (throw 'FAIL "Range 0 should contain range 1"))
+       ((time-range-contains-time-range? range1 range0)
+        (throw 'FAIL "Range 1 should not contain range 2"))
+       ((time-range-contains-time-range? range0 range2)
+        (throw 'FAIL "Range 0 should not contain range 2"))
+       (#t 'OK)))))
+
 (define session-in-range?-test
   (lambda ()
     "session-in-range? accepts something"
@@ -125,6 +146,7 @@
       (list
        dump-sample-db
        time-range-overlaps?-test
+       time-range-contains-time-range?-test
        session-in-range?-test
        august-w2-test))
      ;; Store information about failures here
