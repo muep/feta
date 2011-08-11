@@ -155,6 +155,27 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
   (lambda (t)
     (add-duration (time->week-start-time t) week-duration)))
 
+(define time->month-start-time
+  (lambda (t)
+    (let ((d (time-utc->date t)))
+      (date->time-utc
+       (make-date 0 0 0 0 ;; nanos secs mins hours
+                  1 ;; day
+                  (date-month d)
+                  (date-year d)
+                  (date-zone-offset d))))))
+
+(define time->month-end-time
+  (lambda (t)
+    (let* ((month-start (time->month-start-time t))
+           ;; Get to a bit past the next month's start
+           (next-month-beginish
+            (add-duration month-start
+                          (make-time 'time-duration
+                                     0
+                                     (* 32 day-seconds)))))
+      (time->month-start-time next-month-beginish))))
+
 ;; Warn function that does nothing
 (define warn
   (lambda (msg) #f))
@@ -400,6 +421,14 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
                           (time->week-end-time now))
           #f))))
 
+(define thismonth-matcher
+  (lambda (str)
+    (let ((now (current-time 'time-utc)))
+      (if (equal? str "thismonth")
+          (time-range-new (time->month-start-time now)
+                          (time->month-end-time now))
+          #f))))
+
 (define time-matcher->time-range-matcher
   (lambda (tm)
     (lambda (str)
@@ -424,7 +453,8 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
    ;; First the fixed ones
    (list
     today-matcher
-    thisweek-matcher)
+    thisweek-matcher
+    thismonth-matcher)
    ;; And then some generated from time matchers
    (map time-matcher->time-range-matcher time-matchers)))
 
