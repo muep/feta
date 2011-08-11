@@ -60,6 +60,24 @@
          "Just dump the session list to verify it
           has something sensible in it"
          (display-sessionlist sample-db))
+
+       (lambda ()
+         "session-in-range? accepts something"
+         (let ((big-range (time-range-new
+                           (make-time 'time-utc 0 1300000000)
+                           (make-time 'time-utc 0 1310000000)))
+               (small-session
+                (list
+                 (cons 'start-time (make-time 'time-utc 0 1301000000))
+                 (cons 'end-time (make-time 'time-utc 0 1302000000))
+                 (cons 'description "Working hard"))))
+           (if (not (session-in-range? small-session big-range))
+               (throw 'FAIL
+                      (string-append
+                       "Session\n"
+                       (session->userline small-session)
+                       "was not in big range")))))
+
        (lambda ()
          (let ((aw2-sessions
                 (filter (lambda (session)
