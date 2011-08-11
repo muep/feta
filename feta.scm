@@ -1,6 +1,6 @@
 #!/bin/sh
 # -*- scheme -*-
-exec guile $GUILE_FLAGS -e '(@@ (feta) main)' -s "$0" "$@"
+exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 !#
 ;; feta.scm
 ;;
@@ -42,9 +42,6 @@ exec guile $GUILE_FLAGS -e '(@@ (feta) main)' -s "$0" "$@"
 ;; OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
-
-(define-module (feta)
-  #:export (main))
 
 (use-modules (ice-9 getopt-long))
 (use-modules (ice-9 rdelim))
