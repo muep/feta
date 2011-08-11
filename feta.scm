@@ -327,12 +327,14 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 
 (define session-in-range
   (lambda (range)
-    (lambda (session)
-      (time-range-contains-time-range?
-       range
-       (time-range-new
-        (get 'start-time session)
-        (time-or-now (get 'end-time session)))))))
+    (if (eq? #f range)
+        (throw 'not-proper-range)
+        (lambda (session)
+          (time-range-contains-time-range?
+           range
+           (time-range-new
+            (get 'start-time session)
+            (time-or-now (get 'end-time session))))))))
 
 ;; A structure that defines a slice of time
 (define time-range-new
