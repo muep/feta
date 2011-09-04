@@ -10,7 +10,8 @@
            time-range-end
            time-range-start)
   :use-module ((srfi srfi-19)
-               :select (make-time
+               :select (add-duration
+                        make-time
                         time?
                         time<?
                         time-difference
