@@ -7,6 +7,8 @@
   :export (all
            uniquify))
 
+;; Returns #t if all items in l satisfy ok?,
+;; Otherwise returns #f.
 (define all
   (lambda (ok? l)
     (cond ((null? l) #t)
@@ -23,6 +25,8 @@
               (remove-adjacents tail match? head)
               (cons head (remove-adjacents tail match? head)))))))
 
+;; Removes returns a list with duplicate _strings_
+;; removed.
 (define uniquify
   (lambda (list)
     (remove-adjacents (sort list string<?) equal? "")))
