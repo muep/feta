@@ -49,31 +49,7 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 (use-modules (srfi srfi-1))
 (use-modules (srfi srfi-19))
 
-;; Generic list utilities (TODO: find out if this already
-;; exists somewhere)
-(define remove-adjacents
-  (lambda (list match? prev)
-    (if (null? list)
-        '()
-        (let ((head (car list))
-              (tail (cdr list)))
-          (if (match? head prev)
-              (remove-adjacents tail match? head)
-              (cons head (remove-adjacents tail match? head)))))))
-
-(define uniquify
-  (lambda (list)
-    (remove-adjacents (sort list string<?) equal? "")))
-
-(define last
-  (lambda (l)
-    (car (last-pair l))))
-
-(define all
-  (lambda (ok? l)
-    (cond ((null? l) #t)
-          ((not (ok? (car l))) #f)
-          (#t (all ok? (cdr l))))))
+(use-modules (feta nih))
 
 ;; A wrapper for reducing boilerplate in accessing alist
 ;; members
