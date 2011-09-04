@@ -5,6 +5,9 @@
 (define-module (feta time-range-match)
   :export (string->time-range)
   :use-module ((srfi srfi-19)
+
+               ;; We select this stuff explicitly to avoid
+               ;; a warning in Guile 1.8.
                :select (add-duration
                         make-time
                         date->time-utc
