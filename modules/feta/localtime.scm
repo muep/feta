@@ -1,9 +1,13 @@
 ;; localtime.scm
 ;;
 ;; Some handy local time computation functions
+;; This is actually quite annoying to get correct.
 
 (define-module (feta localtime)
-  :export (;; Mappings from times to ranges
+  :export (;; A very important missing time conversion
+           local-date->time-utc
+
+           ;; Mappings from times to ranges
            day-of
            month-of
            week-of
@@ -38,9 +42,37 @@
     (let ((d (time-utc->date t)))
       (date-zone-offset d))))
 
-(define date->time-local
-  (lambda (d)
-    (let ((attempt (date->time-utc d))))))
+;; Convert a date into a timestamp while ignoring the
+;; timestamp and assuming that the date is in local
+;; offset. This is tricky because the offset actually
+;; depends on what the date is. And it is currently badly
+;; implemented.
+(define local-date->time-utc
+  (lambda (d0)
+    (let* (;; An offset "guess" from the original date.  In
+           ;; many cases this is off from desired offset
+           ;; only by 1 hour at maximum.
+           (offset0 (date-zone-offset d0))
+
+           ;; Let's just convert it blindly first. This may
+           ;; be off by one hour in cases we cross the DST
+           ;; switch time.
+           (t0 (date->time-utc d0))
+
+           ;; Convert it back to a date. This gets us the
+           ;; UTC offset at the specified time. Now NOTE:
+           ;; this was taken from a time that was possibly
+           ;; one hour off!
+           (d1 (time-utc->date t0))
+
+           ;; And the from the nearly-correct time
+           (offset1 (date-zone-offset d1))
+
+           ;; Positive when our guess had drifted forwards
+           (offset-error (- offset1 offset0)))
+      ;; We fail badly in the corner case where the first guess throws
+      ;; us to the wrong side of a DST transition.
+      (subtract-duration t0 (make-time 'time-duration 0 offset-error)))))
 
 (define day-of
   (lambda (t)
