@@ -34,6 +34,8 @@
 
 (define day-seconds 86400)
 (define day-duration (make-time 'time-duration 0 day-seconds))
+(define half-day-seconds (round (/ day-seconds 2)))
+(define half-day-duration (make-time 'time-duration 0 half-day-seconds))
 (define week-seconds (* 7 86400))
 (define week-duration (make-time 'time-duration 0 week-seconds))
 
@@ -67,6 +69,11 @@
       ;; We fail badly in the corner case where the first guess throws
       ;; us to the wrong side of a DST transition.
       (subtract-duration t0 (make-time 'time-duration 0 offset-error)))))
+
+(define closest-day-edge
+  (lambda (t0)
+    ;; Add half day and return to start of day
+    (start-of-day (add-duration t0 half-day-duration))))
 
 (define day-of
   (lambda (t)
