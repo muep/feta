@@ -8,6 +8,7 @@
            time-range?
            time-range-duration
            time-range-end
+           time-range-mid
            time-range-start)
   :use-module ((srfi srfi-19)
                :select (add-duration
@@ -15,6 +16,7 @@
                         time?
                         time<?
                         time-difference
+                        time-second
                         time-utc)))
 
 (define tr-type
@@ -66,5 +68,11 @@
 (define time-range-end
   (lambda (tr) (add-duration (tr-start tr)
                              (tr-len tr))))
+(define time-range-mid
+  (lambda (tr) (add-duration
+                (tr-start tr)
+                (make-time 'time-duration 0 (round
+                                             (/ (time-second (tr-len tr))
+                                                2))))))
 (define time-range-start
   tr-start)
