@@ -128,7 +128,7 @@
                           (make-time 'time-duration
                                      0
                                      (* 367 day-seconds)))))
-      (start-of-year next-year-beginish))))
+      (closest-day-edge (start-of-year next-year-beginish)))))
 
 (define start-of-day
   (lambda (t)
@@ -165,12 +165,13 @@
 (define start-of-year
   (lambda (t)
     (let ((d (time-utc->date t)))
-      (date->time-utc
-       (make-date 0 0 0 0 ;; nanos secs mins hours
-                  1 ;; day
-                  1 ;; month
-                  (date-year d)
-                  (date-zone-offset d))))))
+      (closest-day-edge
+       (date->time-utc
+        (make-date 0 0 0 0 ;; nanos secs mins hours
+                   1 ;; day
+                   1 ;; month
+                   (date-year d)
+                   (date-zone-offset d)))))))
 
 
 (define now (lambda () (current-time 'time-utc)))
