@@ -4,10 +4,7 @@
 ;; This is actually quite annoying to get correct.
 
 (define-module (feta localtime)
-  :export (;; A very important missing time conversion
-           local-date->time-utc
-
-           ;; Mappings from times to ranges
+  :export (;; Mappings from times to ranges
            day-of
            month-of
            week-of
