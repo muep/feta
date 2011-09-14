@@ -37,7 +37,7 @@
 (define week-seconds (* 7 86400))
 (define week-duration (make-time 'time-duration 0 week-seconds))
 
-(define localtime-offset-at
+(define offset-at
   (lambda (t)
     (let ((d (time-utc->date t)))
       (date-zone-offset d))))
