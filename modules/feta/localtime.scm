@@ -86,7 +86,14 @@
 
 (define end-of-day
   (lambda (t)
-    (add-duration (start-of-day t) day-duration)))
+    (let* ((t0 (start-of-day t))
+           (t1 (add-duration t0 day-duration))
+           (orig-offset (offset-at t0))
+           (guess-offset (offset-at t1)))
+      (add-duration t1
+                    (make-time 'time-duration 0
+                               (- orig-offset
+                                  guess-offset))))))
 
 (define end-of-month
   (lambda (t)
@@ -117,7 +124,7 @@
 (define start-of-day
   (lambda (t)
     (let ((d (time-utc->date t)))
-      (date->time-utc
+      (local-date->time-utc
        (make-date 0 0 0 0 ;; nanos secs mins hours
                   (date-day d)
                   (date-month d)
