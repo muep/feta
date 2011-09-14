@@ -111,7 +111,8 @@
                           (make-time 'time-duration
                                      0
                                      (* 32 day-seconds)))))
-      (start-of-month next-month-beginish))))
+      (closest-day-edge
+       (start-of-month next-month-beginish)))))
 
 (define end-of-week
   (lambda (t)
@@ -142,12 +143,13 @@
 (define start-of-month
   (lambda (t)
     (let ((d (time-utc->date t)))
-      (date->time-utc
-       (make-date 0 0 0 0 ;; nanos secs mins hours
-                  1 ;; day
-                  (date-month d)
-                  (date-year d)
-                  (date-zone-offset d))))))
+      (closest-day-edge
+       (date->time-utc
+        (make-date 0 0 0 0 ;; nanos secs mins hours
+                   1 ;; day
+                   (date-month d)
+                   (date-year d)
+                   (date-zone-offset d)))))))
 
 (define start-of-week
   (lambda (t)
