@@ -59,14 +59,8 @@
            ;; switch time.
            (t0 (date->time-utc d0))
 
-           ;; Convert it back to a date. This gets us the
-           ;; UTC offset at the specified time. Now NOTE:
-           ;; this was taken from a time that was possibly
-           ;; one hour off!
-           (d1 (time-utc->date t0))
-
            ;; And the from the nearly-correct time
-           (offset1 (date-zone-offset d1))
+           (offset1 (offset-at t0))
 
            ;; Positive when our guess had drifted forwards
            (offset-error (- offset1 offset0)))
