@@ -115,7 +115,8 @@
 
 (define end-of-week
   (lambda (t)
-    (add-duration (start-of-week t) week-duration)))
+    (closest-day-edge
+     (add-duration (start-of-week t) week-duration))))
 
 (define end-of-year
   (lambda (t)
@@ -154,9 +155,10 @@
                            (- (date-week-day (time-utc->date t)) 1)
                            7))
            (day-start (start-of-day t)))
-      (subtract-duration
-       day-start
-       (make-time 'time-duration 0 (* monday-offset day-seconds))))))
+      (closest-day-edge
+       (subtract-duration
+        day-start
+        (make-time 'time-duration 0 (* monday-offset day-seconds)))))))
 
 (define start-of-year
   (lambda (t)
