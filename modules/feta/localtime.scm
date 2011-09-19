@@ -172,3 +172,7 @@
 
 
 (define now (lambda () (current-time 'time-utc)))
+
+(define month-with-number
+  (lambda (year month)
+    (month-of (date->time-utc (make-date 0 0 0 0 15 month year 0)))))
