@@ -51,9 +51,9 @@
 
 (define normalise-start-end
   (lambda (start end)
-    (let ((start-time (cond ((time? start) start)
-                            ((number? start)
-                             )))))))
+    (let ((start-time (timize start))
+          (end (timize end)))
+      (list start end))))
 
 (define make-time-range
   (lambda (start end)
