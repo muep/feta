@@ -32,7 +32,6 @@
       (string-append (zpad (number->string hours)) ":"
                      (zpad (number->string mins))))))
 
-
 (define (session->etaui-line session)
   (let ((start (time-utc->date
                 (time-range-start
@@ -45,6 +44,7 @@
               (time-range-duration
                (session-time-range session))))
         (form "~Y-~m-~d ~H:~M:~S"))
+
     (string-append
      "event: "
      (date->string start form)
@@ -80,7 +80,6 @@
    ";"
    (session-description session)
    ";"))
-
 
 (define (etadb-load in-port)
   (let ((line (read-line in-port 'trim)))
