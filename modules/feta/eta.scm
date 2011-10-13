@@ -4,8 +4,44 @@
 ;; Embelin Time Assistant
 
 (define-module (feta eta)
-  :export (etaish-main)
-  :use-module (ice-9 getopt-long))
+  :export (etaish-main
+           etadb-load
+           etadb-save
+           etadb-line->session)
+  :use-module (ice-9 getopt-long)
+  :use-module (ice-9 rdelim)
+  :use-module (feta session)
+  :use-module (feta time-range))
+
+
+(define (etadb-line->session line)
+  (catch #t
+         (lambda ()
+           (let* ((lp (open-input-string line))
+                  (start (string->number (read-delimited ";" lp 'trim)))
+                  (end (string->number (read-delimited ";" lp 'trim)))
+                  (desc (string-trim-right (read-line lp 'trim) #\;)))
+             (make-session desc (make-time-range start end))))
+         (lambda _ (throw bad-db-line line))))
+
+(define (etadb-load in-port)
+  (let ((line (read-line in-port 'trim)))
+    (if
+     ;; On EOF...
+     (eof-object? line)
+     ;; ... return empty list
+     '()
+
+     ;; Otherwise we try to parse the line
+     (catch 'bad-db-line
+            (lambda ()
+              (cons
+               (etadb-line->session line)
+               (etadb-load in-port)))
+            (lambda _
+              (etadb-load in-port))))))
+
+
 
 ;; Option specification for getopt-long
 ;; The specification format seems to leave
