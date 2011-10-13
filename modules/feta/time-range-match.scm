@@ -13,7 +13,8 @@
                         date->time-utc
                         string->date
                         time-duration))
-  :use-module (feta time-range))
+  :use-module (feta time-range)
+  :use-module (feta localtime))
 
 (define make-simple-matcher
   (lambda (format accuracy)
@@ -28,6 +29,13 @@
                           (make-time 'time-duration 0 accuracy)))))
        (lambda _ (throw 'no-match))))))
 
+(define kw-matcher
+  (lambda (keyword result)
+    (lambda (str)
+      (if (equal? str keyword)
+          (result)
+          (throw 'no-match)))))
+
 ;; A set of fixed formats supported by
 ;; string->date which we can conveniently match
 ;; against
@@ -40,6 +48,20 @@
 ;; A list of all possible ways for us to match
 (define matchers
   (append
+
+   ;; First some trivial matchers
+   (list
+    (kw-matcher "today"
+                (lambda ()
+                  (day-of (now))))
+    (kw-matcher "thisweek"
+                (lambda ()
+                  (week-of (now))))
+    (kw-matcher "thismonth"
+                (lambda ()
+                  (month-of (now)))))
+
+   ;; Then ones based on string->date
    (map (lambda (format)
           (make-simple-matcher (car format) (cdr format)))
         formats)))
