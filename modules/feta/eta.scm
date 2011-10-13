@@ -7,7 +7,9 @@
   :export (etaish-main
            etadb-load
            etadb-save
-           etadb-line->session)
+           etadb-line->session
+           session->etadb-line)
+  :use-module (srfi srfi-19)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 rdelim)
   :use-module (feta session)
@@ -22,7 +24,23 @@
                   (end (string->number (read-delimited ";" lp 'trim)))
                   (desc (string-trim-right (read-line lp 'trim) #\;)))
              (make-session desc (make-time-range start end))))
-         (lambda _ (throw bad-db-line line))))
+         (lambda _ (throw 'bad-db-line line))))
+
+(define (session->etadb-line session)
+  (string-append
+   (number->string
+    (time-second
+     (time-range-start
+      (session-time-range session))))
+   ";"
+   (number->string
+    (time-second
+     (time-range-end
+      (session-time-range session))))
+   ";"
+   (session-description session)
+   ";"))
+
 
 (define (etadb-load in-port)
   (let ((line (read-line in-port 'trim)))
@@ -41,7 +59,12 @@
             (lambda _
               (etadb-load in-port))))))
 
-
+(define (etadb-save out-port sessions)
+  (for-each
+   (lambda (session)
+     (display (session->etadb-line session) out-port)
+     (newline out-port))
+   sessions))
 
 ;; Option specification for getopt-long
 ;; The specification format seems to leave
