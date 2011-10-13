@@ -12,8 +12,10 @@
   :use-module (srfi srfi-19)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 rdelim)
+  :use-module (feta localtime)
   :use-module (feta session)
-  :use-module (feta time-range))
+  :use-module (feta time-range)
+  :use-module (feta time-range-match))
 
 
 (define (etadb-line->session line)
