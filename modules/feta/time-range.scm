@@ -9,10 +9,13 @@
            time-range-duration
            time-range-end
            time-range-mid
+           time-range-next
+           time-range-prev
            time-range-start)
   :use-module ((srfi srfi-19)
                :select (add-duration
                         make-time
+                        subtract-duration
                         time?
                         time<?
                         time-difference
@@ -74,5 +77,18 @@
                 (make-time 'time-duration 0 (round
                                              (/ (time-second (tr-len tr))
                                                 2))))))
+
+(define time-range-next
+  (lambda (tr)
+    (make-time-range (time-range-end tr)
+                     (add-duration (time-range-end tr)
+                                   (time-range-duration tr)))))
+
+(define time-range-prev
+  (lambda (tr)
+    (make-time-range (subtract-duration (time-range-start tr)
+                                        (time-range-duration tr))
+                     (time-range-start tr))))
+
 (define time-range-start
   tr-start)
