@@ -8,6 +8,7 @@
            etadb-load
            etadb-save
            etadb-line->session
+           session->etaui-line
            session->etadb-line)
   :use-module (srfi srfi-19)
   :use-module (ice-9 getopt-long)
@@ -17,6 +18,38 @@
   :use-module (feta time-range)
   :use-module (feta time-range-match))
 
+;; This might live a happy life elsewhere...
+(define duration->string
+  (lambda (seconds)
+    (let* ((hours (floor (/ seconds 3600)))
+           (remaining (modulo seconds 3600))
+           (mins (floor (/ remaining 60))))
+      (string-append (number->string hours) ":"
+                     (number->string mins)))))
+
+
+(define (session->etaui-line session)
+  (let ((start (time-utc->date
+                (time-range-start
+                 (session-time-range session))))
+        (end (time-utc->date
+                (time-range-start
+                 (session-time-range session))))
+        (desc (session-description session))
+        (dur (time-second
+              (time-range-duration
+               (session-time-range session))))
+        (form "~Y-~m-~d ~H:~M:~S"))
+    (string-append
+     "event: "
+     (date->string start form)
+     " - "
+     (date->string start form)
+     " = "
+     (duration->string dur)
+     "'"
+     desc
+     "'")))
 
 (define (etadb-line->session line)
   (catch #t
