@@ -12,26 +12,8 @@
            time-range-next
            time-range-prev
            time-range-start)
-  :use-module ((srfi srfi-19)
-               :select (add-duration
-                        make-time
-                        subtract-duration
-                        time?
-                        time<?
-                        time-difference
-                        time-second
-                        time-utc)))
-
-(define tr-type
-  (make-record-type "time-range" '(start length)))
-
-(define tr-make
-  (record-constructor tr-type '(start length)))
-
-(define tr-start
-  (record-accessor tr-type 'start))
-(define tr-len
-  (record-accessor tr-type 'length))
+  :use-module (ice-9 optargs)
+  :use-module (srfi srfi-19))
 
 ;; Convert a time given as an unix time stamp number into
 ;; the srfi-19 time record.
@@ -42,31 +24,40 @@
           ((number? ton) (make-time 'time-utc 0 ton))
           (#t #f))))
 
-(define normalise-start-end
-  (lambda (start end)
-    (let ((start-time (timize start))
-          (end (timize end)))
-      (list start end))))
+(define (earlier? t0 t1)
+  (if (eq? t1 #f)
+      ;; Everything is earlier than #f
+      #t
+      ;; Otherwise defer to time<?
+      (time<? t0 t1)))
 
-(define make-time-range
-  (lambda (start end)
-    (let ((times (sort (list (timize start) (timize end)) time<?)))
-      (tr-make (car times) (time-difference (cadr times) (car times))))))
 
-(define time-range?
-  (record-predicate tr-type))
+(define (make-time-range start . end)
+  (list
+   (cons 'start (timize start))
+   (cons 'end   (if (null? end) #f
+                    (timize (car end))))))
 
-(define time-range-duration
-  tr-len)
-(define time-range-end
-  (lambda (tr) (add-duration (tr-start tr)
-                             (tr-len tr))))
-(define time-range-mid
-  (lambda (tr) (add-duration
-                (tr-start tr)
-                (make-time 'time-duration 0 (round
-                                             (/ (time-second (tr-len tr))
-                                                2))))))
+(define (time-range? sth)
+  (if (and (assoc 'start sth) (assoc 'end sth)) #t #f))
+
+(define (time-range-duration tr)
+  (let* ((start (time-range-start tr))
+         (end   (time-range-end tr)))
+    (if (not (and start end)) #f
+        (time-difference end start))))
+
+(define (time-range-end tr)
+  (let ((c (assoc 'end tr)))
+    (if c (cdr c) #f)))
+
+(define (time-range-mid tr)
+  (add-duration
+   (time-range-start tr)
+   (make-time 'time-duration 0
+              (round ;; We really want an integer second
+               (/ (time-second (time-range-duration tr))
+                  2)))))
 
 (define time-range-next
   (lambda (tr)
@@ -80,5 +71,6 @@
                                         (time-range-duration tr))
                      (time-range-start tr))))
 
-(define time-range-start
-  tr-start)
+(define (time-range-start tr)
+  (let ((c (assoc 'start tr)))
+    (if c (cdr c) #f)))
