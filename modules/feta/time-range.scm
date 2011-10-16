@@ -6,6 +6,7 @@
   :export (;; Functions
            make-time-range
            time-range?
+           time-range-complete?
            time-range-duration
            time-range-end
            time-range-mid
@@ -13,7 +14,8 @@
            time-range-prev
            time-range-start)
   :use-module (ice-9 optargs)
-  :use-module (srfi srfi-19))
+  :use-module (srfi srfi-19)
+  :use-module (feta nih))
 
 ;; Convert a time given as an unix time stamp number into
 ;; the srfi-19 time record.
@@ -39,7 +41,15 @@
                     (timize (car end))))))
 
 (define (time-range? sth)
-  (if (and (assoc 'start sth) (assoc 'end sth)) #t #f))
+  (if (and
+       (list? sth)
+       (assoc 'start sth)
+       (assoc 'end sth)) #t #f))
+
+(define (time-range-complete? tr)
+  (if (and (time-range? tr)
+           (time-range-start tr)
+           (time-range-end tr)) #t #f))
 
 (define (time-range-duration tr)
   (let* ((start (time-range-start tr))
@@ -48,29 +58,31 @@
         (time-difference end start))))
 
 (define (time-range-end tr)
-  (let ((c (assoc 'end tr)))
-    (if c (cdr c) #f)))
+  (aget 'end tr))
 
 (define (time-range-mid tr)
-  (add-duration
-   (time-range-start tr)
-   (make-time 'time-duration 0
-              (round ;; We really want an integer second
-               (/ (time-second (time-range-duration tr))
-                  2)))))
+  (if (time-range-complete? tr)
+      (add-duration
+       (time-range-start tr)
+       (make-time 'time-duration 0
+                  (round ;; We really want an integer second
+                   (/ (time-second (time-range-duration tr))
+                      2))))
+      #f))
 
-(define time-range-next
-  (lambda (tr)
+(define (time-range-next tr)
+  (if (time-range-complete? tr)
     (make-time-range (time-range-end tr)
                      (add-duration (time-range-end tr)
-                                   (time-range-duration tr)))))
+                                   (time-range-duration tr)))
+    #f))
 
-(define time-range-prev
-  (lambda (tr)
+(define (time-range-prev tr)
+  (if (time-range-complete? tr)
     (make-time-range (subtract-duration (time-range-start tr)
                                         (time-range-duration tr))
-                     (time-range-start tr))))
+                     (time-range-start tr))
+    #f))
 
 (define (time-range-start tr)
-  (let ((c (assoc 'start tr)))
-    (if c (cdr c) #f)))
+  (aget 'start tr))
