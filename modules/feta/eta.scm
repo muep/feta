@@ -61,7 +61,10 @@
          (lambda ()
            (let* ((lp (open-input-string line))
                   (start (string->number (read-delimited ";" lp 'trim)))
-                  (end (string->number (read-delimited ";" lp 'trim)))
+                  (endstr (read-delimited ";" lp 'trim))
+                  (end (if (equal? (string-length endstr) 0)
+                           #f
+                           (string->number endstr)))
                   (desc (string-trim-right (read-line lp 'trim) #\;)))
              (make-session desc (make-time-range start end))))
          (lambda _ (throw 'bad-db-line line))))
