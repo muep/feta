@@ -11,7 +11,7 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 ;; https://gitorious.org/embelin-time-assistant/ Written most
 ;; importantly just for learning scheme.
 ;;
-;; Copyright (c) 2011, Joonas Sarajärvi <muepsj@gmail.com>
+;; Copyright (c) 2011, Joonas Sarajärvi <muep@iki.fi>
 ;;
 ;; All rights reserved.
 ;;

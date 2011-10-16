@@ -2,11 +2,9 @@
 # -*- scheme -*-
 exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 !#
-
 ;; feta2.scm
 ;;
 ;; Entry point executable for the modularized feta.
-;; This file is part of feta.
 ;;
 ;; Copyright (c) 2011, Joonas Sarajärvi <muep@iki.fi>
 ;;
