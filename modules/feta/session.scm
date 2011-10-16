@@ -8,6 +8,7 @@
            session?
            session-description
            session-end
+           session-finished?
            session-start
            session-time-range)
   :use-module (ice-9 optargs)
@@ -39,4 +40,5 @@
 
 (define session-start time-range-start)
 (define session-end time-range-end)
+(define session-finished? time-range-complete?)
 (define (session-time-range s-tr) s-tr)
