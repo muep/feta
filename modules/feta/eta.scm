@@ -14,23 +14,10 @@
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 rdelim)
   :use-module (feta localtime)
+  :use-module (feta nih)
   :use-module (feta session)
   :use-module (feta time-range)
   :use-module (feta time-range-match))
-
-(define (zpad str)
-  (if (>= (string-length str) 2)
-      str
-      (zpad (string-append "0" str))))
-
-;; This might live a happy life elsewhere...
-(define duration->string
-  (lambda (seconds)
-    (let* ((hours (floor (/ seconds 3600)))
-           (remaining (modulo seconds 3600))
-           (mins (floor (/ remaining 60))))
-      (string-append (zpad (number->string hours)) ":"
-                     (zpad (number->string mins))))))
 
 (define (session->etaui-line session)
   (let* ((finished (session-finished? session))

@@ -6,6 +6,7 @@
 (define-module (feta nih)
   :export (aget
            all
+           duration->string
            get-kval
            uniquify))
 
@@ -21,6 +22,22 @@
     (cond ((null? l) #t)
           ((not (ok? (car l))) #f)
           (#t (all ok? (cdr l))))))
+
+;; Pads string with zeroes from the left until its length is
+;; at least 2.
+(define (zpad str)
+  (if (>= (string-length str) 2)
+      str
+      (zpad (string-append "0" str))))
+
+;; Makes a nice hh:mm representation for a duration given in
+;; seconds.
+(define (duration->string seconds)
+  (let* ((hours (floor (/ seconds 3600)))
+         (remaining (modulo seconds 3600))
+         (mins (floor (/ remaining 60))))
+    (string-append (zpad (number->string hours)) ":"
+                   (zpad (number->string mins)))))
 
 ;; Fetches the first item from l whose previous item is eq
 ;; with k. If no item is found, returns #f.
