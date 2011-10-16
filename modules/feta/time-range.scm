@@ -37,20 +37,10 @@
 ;; the srfi-19 time record.
 (define timize
   (lambda (ton)
-    (cond ((time? ton) ton)
+    (cond ((eq? ton #f) #f)
+          ((time? ton) ton)
           ((number? ton) (make-time 'time-utc 0 ton))
           (#t #f))))
-
-(define earliest
-  (lambda (times)
-    (if (equal? (length times) 1)
-        (car times)
-        (let ((t1 (car times))
-              (t2 (cadr times))
-              (rest (cddr times)))
-          (earliest (cons
-                     (if (time<? t1 t2) t1 t2)
-                     rest))))))
 
 (define normalise-start-end
   (lambda (start end)
