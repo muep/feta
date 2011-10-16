@@ -4,8 +4,14 @@
 ;; were Not Invented Here.
 
 (define-module (feta nih)
-  :export (all
+  :export (aget
+           all
            uniquify))
+
+;; Get from association list, or #f
+(define (aget key l)
+  (let ((c (assoc key l)))
+    (if c (cdr c) #f)))
 
 ;; Returns #t if all items in l satisfy ok?,
 ;; Otherwise returns #f.
