@@ -33,26 +33,33 @@
                      (zpad (number->string mins))))))
 
 (define (session->etaui-line session)
-  (let ((start (time-utc->date
-                (time-range-start
-                 (session-time-range session))))
-        (end (time-utc->date
-                (time-range-start
-                 (session-time-range session))))
-        (desc (session-description session))
-        (dur (time-second
-              (time-range-duration
-               (session-time-range session))))
-        (form "~Y-~m-~d ~H:~M:~S"))
+  (let* ((finished (session-finished? session))
+         (startt (session-start session))
+         (endt (if finished (session-end session) (now)))
+
+         (start (time-utc->date startt))
+         (end (time-utc->date endt))
+
+         (desc (session-description session))
+         (dur (time-second
+               (time-range-duration
+                (make-time-range startt endt))))
+
+         (form "~Y-~m-~d ~H:~M:~S")
+         (form2 " Until now (~H:~M) "))
 
     (string-append
      "event: "
      (date->string start form)
      " - "
-     (date->string start form)
-     " = "
+     (date->string end (if finished form form2))
+     (if finished
+         " = "
+         " =[")
      (duration->string dur)
-     " '"
+     (if finished
+         " '"
+         "]'")
      desc
      "'")))
 
