@@ -83,10 +83,12 @@
      (time-range-start
       (session-time-range session))))
    ";"
-   (number->string
-    (time-second
-     (time-range-end
-      (session-time-range session))))
+   (if (session-finished? session)
+       (number->string
+        (time-second
+         (time-range-end
+          (session-time-range session))))
+       "")
    ";"
    (session-description session)
    ";"))
@@ -98,7 +100,6 @@
      (eof-object? line)
      ;; ... return empty list
      '()
-
      ;; Otherwise we try to parse the line
      (catch 'bad-db-line
             (lambda ()
@@ -114,6 +115,20 @@
      (display (session->etadb-line session) out-port)
      (newline out-port))
    sessions))
+
+(define (session-starts-before? s0 s1)
+  (time<? (session-start s0)
+          (session-start s1)))
+
+
+(define (sessions-closed sessions)
+  (let ((ct (now)))
+    (map (lambda (session)
+           (if (time-range-complete?
+                (session-time-range session))
+               session
+               (make-session-from session #:end ct)))
+         sessions)))
 
 ;; Option specification for getopt-long
 ;; The specification format seems to leave
@@ -168,6 +183,88 @@
     (filter-time
      (value #t))))
 
-(define etaish-main
-  (lambda (argv)
-    (getopt-long argv option-spec)))
+(define (dump-sessions sessions)
+  (let ((total 0))
+    (for-each
+     (lambda (session)
+       (set! total (+ total
+                      (time-second
+                       (time-range-duration
+                        (make-time-range
+                         (session-start session)
+                         (if (session-finished? session)
+                             (session-end session) (now)))))))
+
+       (display (session->etaui-line session))
+       (newline))
+     sessions)
+    (display (string-append (duration->string total)
+                            " in total.\n"))))
+
+
+(define (countv k l . prevs)
+  (let ((prev (if (null? prevs) 0 (car prevs))))
+    (if (null? l) prev
+        (countv k
+                (cdr l)
+                (+ (if (equal? k (car l)) 1 0) prev)))))
+
+
+(define (etaish-main argv)
+  (let* ((opts (getopt-long argv option-spec))
+         (want-help  (option-ref opts 'help  #f))
+         (want-start (option-ref opts 'start #f))
+         (want-end   (option-ref opts 'end   #f))
+
+         (requested-time
+          (let ((timearg (option-ref opts 'time #f)))
+            (if timearg
+                (let ((tr (string->time-range timearg)))
+                  (if tr
+                      (time-range-start tr)
+
+                      ;; Could not parse
+                      (throw 'could-not-parse-time timearg)))
+                ;; Time was not specified
+                (now))))
+
+         (db-location
+          (option-ref opts 'file
+                      ;; We default to ${HOME}/.ttdb
+                      (string-append (getenv "HOME") "/.ttdb")))
+
+         ;; Now this is a bit heavy. We always load the
+         ;; whole database.
+         (old-db (sort
+                  (etadb-load (open-input-file db-location))
+                  session-starts-before?))
+         (descr-for-new
+          (option-ref opts 'description
+                      (if (null? old-db)
+                          "PROJECT"
+                          (session-description (car (last-pair old-db))))))
+         )
+
+    (cond
+     (want-help
+      (display "Write the fine manual\n"))
+
+     ((< 1
+         (length (filter identity (list want-end
+                                        want-start))))
+      (display "Please only pick one operation of --end and --start\n"))
+
+     (want-start
+      (etadb-save
+       (open-output-file db-location)
+       (sort (cons (make-session descr-for-new
+                                 (make-time-range requested-time))
+                   (sessions-closed old-db))
+             session-starts-before?)))
+
+     (want-end
+      (etadb-save
+       (open-output-file db-location)
+       (sort (sessions-closed old-db)
+             session-starts-before?)))
+     (#t (dump-sessions old-db)))))
