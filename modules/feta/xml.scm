@@ -42,8 +42,19 @@
   :use-module (feta nih)
   :use-module (feta session))
 
+(define (session-starts s)
+  (time-second (session-start s)))
+
+(define (session-ends s)
+  (time-second (session-end s)))
+
 (define (sessions->sxml sessions)
-  '(sessions))
+  (cons 'sessions (map session->sxml sessions)))
+
+(define (session->sxml session)
+  `(session (@ (start       ,(session-starts      session))
+               (end         ,(session-ends        session))
+               (description ,(session-description session)))))
 
 (define xhtml-title "Feta session report")
 
@@ -59,12 +70,6 @@
 (define (time->clockstr t)
   (date->string (time-utc->date (timify t))
                 "~H:~M"))
-
-(define (session-starts s)
-  (time-second (session-start s)))
-
-(define (session-ends s)
-  (time-second (session-end s)))
 
 (define (sessions->xhtml sessions)
   `(html
