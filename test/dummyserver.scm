@@ -65,8 +65,10 @@ exec guile $GUILE_FLAGS -e main -s "$0" "$@"
 
 (define (get-dbtype comps . rest)
   (let ((allowed-types (if (null? rest) '(html) (car rest)))
-        (requested-type (cond ((equal? 1 (length comps)) 'html)
-                              ((equal? 2 (length comps)) (string->symbol (cadr comps)))
+        (requested-type (cond ((equal? 1 (length comps))
+                               'html)
+                              ((equal? 2 (length comps))
+                               (string->symbol (cadr comps)))
                               (#t #f))))
     (if (member requested-type allowed-types)
         requested-type
