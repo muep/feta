@@ -47,12 +47,24 @@
 
 (define xhtml-title "Feta session report")
 
+(define (timify t)
+  (cond ((time? t) t)
+        ((number? t) (make-time 'time-utc 0 t))
+        (#t #f)))
+
+(define (time->string t)
+  (date->string (time-utc->date (timify t))
+                "~Y-~m-~d ~H:~M"))
+
+(define (time->clockstr t)
+  (date->string (time-utc->date (timify t))
+                "~H:~M"))
+
 (define (session-starts s)
   (time-second (session-start s)))
 
 (define (session-ends s)
   (time-second (session-end s)))
-
 
 (define (sessions->xhtml sessions)
   `(html
@@ -60,19 +72,24 @@
      (title ,xhtml-title))
     (body
      (h1 ,xhtml-title)
-     (p "From " ,(apply min (map session-starts sessions))
-        " to " ,(apply max (map session-ends sessions)) ".")
+     (p "From " ,(time->string
+                  (apply min (map session-starts sessions)))
+        (br)
+        " to " ,(time->string
+                 (apply max (map session-ends sessions))) ".")
      ,(sessions->xhtmltable sessions))))
 
 (define (sessions->xhtmltable sessions)
   `(table (@ (border 1))
-    ,(map session->xhtmlrow sessions)))
+          (tr (th "Start") (th "End")
+              (th "Duration") (th "Description"))
+          ,(map session->xhtmlrow sessions)))
 
 (define (session->xhtmlrow session)
   (let* ((starts (time-second (session-start session)))
          (ends (time-second (session-end session)))
          (durstr (duration->string (- ends starts))))
-  `(tr (td ,starts)
-       (td ,ends)
-       (td ,(session-description session))
-       (td ,durstr))))
+  `(tr (td ,(time->string starts))
+       (td ,(time->clockstr ends))
+       (td ,durstr)
+       (td ,(session-description session)))))
