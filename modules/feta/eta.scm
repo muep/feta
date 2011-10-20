@@ -99,14 +99,12 @@
   (string-append
    (number->string
     (time-second
-     (time-range-start
-      (session-time-range session))))
+     (session-start session)))
    ";"
    (if (session-finished? session)
        (number->string
         (time-second
-         (time-range-end
-          (session-time-range session))))
+         (session-end session)))
        "")
    ";"
    (session-description session)
