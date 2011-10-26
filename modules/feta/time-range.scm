@@ -42,6 +42,7 @@
            make-time-range
            time-range?
            time-range-complete?
+           time-range-contains?
            time-range-duration
            time-range-end
            time-range-mid
@@ -85,6 +86,31 @@
   (if (and (time-range? tr)
            (time-range-start tr)
            (time-range-end tr)) #t #f))
+
+;; This is a bit complicated because it can accept
+;; many kinds of input.
+(define (time-range-contains? sth tr)
+  (cond ((time-range? sth)
+         ;; Check that both ends of sth are contained
+         (and (time-range-contains? (time-range-start sth))
+              (time-range-contains? (time-range-end sth))))
+
+        ((number? sth)
+         (time-range-contains? (timize sth) tr))
+        ((time? sth)
+         (and
+          ;; Is after start
+          (time<=? (time-range-start tr) sth)
+
+          ;; Is before end...
+          (if (time-range-end tr)
+              ;; ..and has an end to compare against
+              (time<=? sth (time-range-end tr))
+              ;; .. we kind of assume that the potentially containing
+              ;; time range extends to infinity.
+              #t)))
+        ;; Other things are not contained.
+        (#t #f)))
 
 (define (time-range-duration tr)
   (let* ((start (time-range-start tr))
