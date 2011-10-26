@@ -226,6 +226,14 @@
                 (cdr l)
                 (+ (if (equal? k (car l)) 1 0) prev)))))
 
+(define (string->session-filter str)
+  (let ((tr (string->time-range str)))
+    (if (not (time-range? tr))
+        (throw 'invalid-time-range-spec str)
+        ;; Check if session starts inside the time range
+        (lambda (session)
+          (time-range-contains?
+           (session-start session) tr)))))
 
 (define (etaish-main argv)
   (let* ((opts (getopt-long argv option-spec))
@@ -260,7 +268,7 @@
                       (if (null? old-db)
                           "PROJECT"
                           (session-description (car (last-pair old-db))))))
-         )
+         (tf-spec (option-ref opts 'filter-time 'take-all)))
 
     (cond
      (want-help
@@ -284,4 +292,9 @@
        (open-output-file db-location)
        (sort (sessions-closed old-db)
              session-starts-before?)))
-     (#t (dump-sessions old-db)))))
+     (#t
+      ;; Display of sessions is our default action
+      (dump-sessions (if (eq? tf-spec 'take-all) old-db
+                         (filter
+                          (string->session-filter tf-spec)
+                          old-db)))))))
