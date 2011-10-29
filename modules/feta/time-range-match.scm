@@ -76,6 +76,17 @@
 ;; A list of all possible ways for us to match
 (define matchers
   (append
+   ;; This must be the first matcher. It tries to Split its
+   ;; input in half at ".."  and uses the rest of the
+   ;; matchers for both of the pieces.
+   (list
+    (lambda (str)
+      (let ((posof.. (string-contains str "..")))
+        (if posof..
+            (make-time-range
+             (match (substring str 0 posof..) (cdr matchers))
+             (match (substring str (+ 2 posof..))   (cdr matchers)))
+            (throw 'no-match)))))
 
    ;; First some trivial matchers
    (list
