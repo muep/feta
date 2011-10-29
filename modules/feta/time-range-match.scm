@@ -94,12 +94,16 @@
           (make-simple-matcher (car format) (cdr format)))
         formats)))
 
-(define string->time-range
-  (lambda (str)
-    (letrec ((match (lambda (str mcrs)
-                      (if (null? mcrs) #f
-                          (catch 'no-match
-                                 (lambda ()
-                                   ((car mcrs) str))
-                                 (lambda _ (match str (cdr mcrs))))))))
-      (match str matchers))))
+(define (match str mcrs)
+  (if (null? mcrs)
+      (throw 'no-match)
+      (catch 'no-match
+             (lambda ()
+               ((car mcrs) str))
+             (lambda _ (match str (cdr mcrs))))))
+
+(define (string->time-range str)
+  (catch 'no-match
+         (lambda ()
+           (match str matchers))
+         (lambda _ #f)))
