@@ -56,6 +56,7 @@
     (cond ((eq? ton #f) #f)
           ((time? ton) ton)
           ((number? ton) (make-time 'time-utc 0 ton))
+          ((time-range? ton) (time-range-start ton))
           (#t #f))))
 
 (define (earlier? t0 t1)
