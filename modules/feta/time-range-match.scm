@@ -31,6 +31,8 @@
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (define-module (feta time-range-match)
+  ;; Yes, all this code so far is to get just this
+  ;; one function working.
   :export (string->time-range)
   :use-module ((srfi srfi-19)
 
@@ -113,6 +115,22 @@
                ((car mcrs) str))
              (lambda _ (match str (cdr mcrs))))))
 
+;; Takes a string (probably from user), returns a time
+;; range.  Accepts many kinds of strings, like "2011-11-11"
+;; or "2011-11-11T11:11" or also "today". With any
+;; combination of these formats, also accepts
+;; <something>..<somethingelse>.
+;;
+;; From such a specification, we generate the time range so
+;; that its start will be start of time range from
+;; <something> and end will be the start of <somethingelse>.
+;;
+;; The functionality is still not flawless. The matchers
+;; based on (string->date ...) from (srfi srfi-19) accept
+;; dates with garbage in their ends. Syntax like
+;; <time1>..<time2>..<time3> will also flow through the
+;; matcher chain nicely, but <time3> will get ignored. TODO
+;; something should maybe be done about the latter issue.
 (define (string->time-range str)
   (catch 'no-match
          (lambda ()
