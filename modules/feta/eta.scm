@@ -122,6 +122,11 @@
             (lambda _
               (etadb-load in-port))))))
 
+(define (etadb-load-from fpath)
+  (if (file-exists? fpath)
+      (call-with-input-file fpath etadb-load)
+      '()))
+
 (define (etadb-save out-port sessions)
   (for-each
    (lambda (session)
@@ -256,7 +261,7 @@
          ;; Now this is a bit heavy. We always load the
          ;; whole database.
          (old-db (sort
-                  (etadb-load (open-input-file db-location))
+                  (etadb-load-from db-location)
                   session-starts-before?))
          (descr-for-new
           (option-ref opts 'description
