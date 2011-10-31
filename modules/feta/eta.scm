@@ -134,14 +134,13 @@
           (session-start s1)))
 
 
-(define (sessions-closed sessions)
-  (let ((ct (now)))
-    (map (lambda (session)
-           (if (time-range-complete?
-                (session-time-range session))
-               session
-               (make-session-from session #:end ct)))
-         sessions)))
+(define (sessions-closed-at ct sessions)
+  (map (lambda (session)
+         (if (time-range-complete?
+              (session-time-range session))
+             session
+             (make-session-from session #:end ct)))
+       sessions))
 
 ;; Option specification for getopt-long
 ;; The specification format seems to leave
@@ -280,13 +279,13 @@
        (open-output-file db-location)
        (sort (cons (make-session descr-for-new
                                  (make-time-range requested-time))
-                   (sessions-closed old-db))
+                   (sessions-closed-at requested-time old-db))
              session-starts-before?)))
 
      (want-end
       (etadb-save
        (open-output-file db-location)
-       (sort (sessions-closed old-db)
+       (sort (sessions-closed-at requested-time old-db)
              session-starts-before?)))
      (#t
       ;; Display of sessions is our default action
