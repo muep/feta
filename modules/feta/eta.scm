@@ -33,6 +33,7 @@
 
 (define-module (feta eta)
   :export (etaish-main
+           etadb-input-port->session-stream
            etadb-load
            etadb-save
            etadb-line->session
@@ -41,6 +42,7 @@
   :use-module (srfi srfi-19)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 rdelim)
+  :use-module (ice-9 streams)
   :use-module (feta localtime)
   :use-module (feta nih)
   :use-module (feta session)
@@ -106,21 +108,31 @@
    (session-description session)
    ";"))
 
+
+;; Generator function for the next function that is supposed
+;; to make a stream for us.  The generator function keeps
+;; just the port as its state.
+(define (session-stream-generator port)
+  (let ((line (read-line port 'trim)))
+    (if (eof-object? line)
+        (close-port port) ;; did not get a line anymore
+                          ;; Note that we must return something non-pair,
+                          ;; for which (close-port ) probably suffices.
+        (catch 'bad-db-line ;; otherwise we try to parse
+               (lambda ()
+                 (cons (etadb-line->session line)
+                       port))
+               (lambda _
+                 ;; We failed to parse the current line,
+                 ;; but try to parse the next one
+                 (stream-generator port))))))
+
+(define (etadb-input-port->session-stream port)
+  (if (not (input-port? port)) (throw 'not-input-port)
+      (make-stream session-stream-generator port)))
+
 (define (etadb-load in-port)
-  (let ((line (read-line in-port 'trim)))
-    (if
-     ;; On EOF...
-     (eof-object? line)
-     ;; ... return empty list
-     '()
-     ;; Otherwise we try to parse the line
-     (catch 'bad-db-line
-            (lambda ()
-              (cons
-               (etadb-line->session line)
-               (etadb-load in-port)))
-            (lambda _
-              (etadb-load in-port))))))
+  (stream->list (etadb-input-port->session-stream port)))
 
 (define (etadb-load-from fpath)
   (if (file-exists? fpath)
