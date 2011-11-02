@@ -35,6 +35,7 @@
   :export (etaish-main
            etadb-input-port->session-stream
            etadb-load
+           etadb-load-from
            etadb-save
            etadb-line->session
            session->etaui-line
