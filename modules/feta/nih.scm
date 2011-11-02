@@ -32,10 +32,12 @@
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (define-module (feta nih)
+  :use-module (ice-9 streams)
   :export (aget
            all
            duration->string
            get-kval
+           stream-filter
            uniquify))
 
 ;; Get from association list, or #f
@@ -86,6 +88,21 @@
           (if (match? head prev)
               (remove-adjacents tail match? head)
               (cons head (remove-adjacents tail match? head)))))))
+
+;; This is something which would be nice in (ice-9 streams)...
+;; Anyway, it produces from a stream another stream that only contains
+;; elements which satisfy pred.
+;;
+;; You might be able to use stream-fold for the cases where this is
+;; is useful, but I do not want to...
+(define (stream-filter pred stream)
+  (letrec ((sfg (lambda (strm)
+                  (if (stream-null? strm) #f ;; Empty stream is empty.
+                      (let ((cur (stream-car strm)))
+                        (if (pred cur)
+                            (cons cur (stream-cdr strm))
+                            (sfg (stream-cdr strm))))))))
+  (make-stream sfg stream)))
 
 ;; Removes returns a list with duplicate _strings_
 ;; removed.
