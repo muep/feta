@@ -132,7 +132,7 @@
       (make-stream session-stream-generator port)))
 
 (define (etadb-load in-port)
-  (stream->list (etadb-input-port->session-stream port)))
+  (stream->list (etadb-input-port->session-stream in-port)))
 
 (define (etadb-load-from fpath)
   (if (file-exists? fpath)
