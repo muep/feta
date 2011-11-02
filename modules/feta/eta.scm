@@ -48,7 +48,8 @@
   :use-module (feta nih)
   :use-module (feta session)
   :use-module (feta time-range)
-  :use-module (feta time-range-match))
+  :use-module (feta time-range-match)
+  :use-module (feta version))
 
 (define (session->etaui-line session)
   (let* ((finished (session-finished? session))
@@ -253,6 +254,7 @@
          (want-help  (option-ref opts 'help  #f))
          (want-start (option-ref opts 'start #f))
          (want-end   (option-ref opts 'end   #f))
+         (want-version (option-ref opts 'version #f))
 
          (requested-time
           (let ((timearg (option-ref opts 'time #f)))
@@ -287,6 +289,10 @@
      (want-help
       (display "Write the fine manual\n"))
 
+     (want-version
+      (display "feta version ")
+      (display (feta-version->string feta-version))
+      (newline))
      ((< 1
          (length (filter identity (list want-end
                                         want-start))))

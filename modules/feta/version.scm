@@ -32,6 +32,15 @@
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (define-module (feta version)
-  :export (feta-version))
+  :export (feta-version
+           feta-version->string))
 
 (define feta-version '(0 0))
+
+(define (feta-version->string ver)
+  (let ((fst (car ver))
+        (rest (cdr ver)))
+    (if (null? rest)
+        (number->string fst)
+        (string-append (number->string fst) "."
+                       (feta-version->string rest)))))
