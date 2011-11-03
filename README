@@ -1,0 +1,74 @@
+Feta - Hours tracking tool
+
+Feta is a library and a tool for creating a list of sessions
+into a file and generating reports from them.
+
+Feta is currently hosted at Gitorious [1].
+
+* Dependencies
+Currently Feta requires only GNU Guile [2] and libraries
+included in it.
+
+As of writing this, Guile 1.8 is the version of Guile that
+is most often shipped as part of GNU/Linux distributions.
+Guile 2.0 series, however, has been available for some time
+and it really provides some great enhancements over the 1.8
+series.
+
+All Feta modules work just fine with Guile 1.8, but some, in
+particular the web related ones use modules which only
+became part of Guile in later releases. So unless you can
+provide a suitable (sxml simple) and the various (web
+something) modules used in (feta xml) and
+test/dummyserver.scm, some functionality require Guile 2.0
+or later in practice.
+
+* Getting it running
+The feta.scm script and the possible others with a shebang
+line otherwise work, but you probably do not wish to copy
+the modules of Feta right into the paths from which your
+copy of Guile loads its modules. It would at least be
+recommended to package the modules before doing so, to
+facilitate easy uninstallation.
+
+So unless you are much into packaging stuff, you probably
+need to tell Guile about the additional paths from which to
+load modules. The easiest way to do it is to set the
+GUILE_LOAD_PATH environment variable to point to a place
+that contains the Feta module hierarchy, which is in the
+modules/ directory of the feta project root.
+
+Thus, if the feta project root is your current working
+directory, you might run feta.scm like this:
+
+ env GUILE_LOAD_PATH=./modules/ ./feta.scm
+
+* Notes about packaging
+First, the project is really not very mature. It is far from
+feature-complete, very badly documented and is likely to
+keep changing a lot in the near future. It may not make
+sense to package it just yet.
+
+I really have no idea about what kind of a build/install
+system a Guile-based application should have, but I intend
+to probably add something when I know what I want. As long
+as there is no such a system, a packager would need to make
+educated guesses about what to put where and if some files
+need preprocessing. So here is an initial look at how the
+package contents might look.
+
+feta.scm without the suffix in filename:
+/usr/bin/feta
+
+module hierarchy copied to /usr/share/guile/site/:
+/usr/share/guile/site/feta/session.scm
+/usr/share/guile/site/feta/time-range.scm
+...
+
+This should be enough for feta to work as intended.
+Other files may be contained according to OS packaging
+conventions.
+
+* References
+[1] https://gitorious.org/feta
+[2] http://www.gnu.org/s/guile/
